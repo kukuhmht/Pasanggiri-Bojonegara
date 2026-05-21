@@ -445,6 +445,42 @@ body::before {
 /* Utility */
 .hidden { display: none !important; }
 
+/* Peraturan PDF Viewer */
+.peraturan-section {
+  margin-bottom: 20px;
+}
+
+.btn-peraturan {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid var(--emas);
+  border-radius: var(--radius);
+  background: var(--putih-gading);
+  color: var(--hijau-tua);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-peraturan:active {
+  background: var(--emas);
+  color: #fff;
+}
+
+.peraturan-viewer {
+  margin-top: 12px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.peraturan-viewer iframe {
+  width: 100%;
+  height: 70vh;
+  border: none;
+}
+
 /* Responsive - Tablet & Desktop */
 @media (min-width: 768px) {
   .app-header h1 { font-size: 2rem; }

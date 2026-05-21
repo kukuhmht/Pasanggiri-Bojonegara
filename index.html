@@ -12,7 +12,7 @@
   <!-- Header -->
   <header class="app-header">
     <h1>Pasanggiri Bojonegara</h1>
-    <p>Sistem Pendaftaran Lomba Seni Tradisional</p>
+    <p>Sistem Pendaftaran Peserta Pasanggiri Desa Bojonegara</p>
   </header>
 
   <!-- Main Content -->
@@ -20,6 +20,16 @@
     <!-- Form Pendaftaran -->
     <section id="page-form" class="page active">
       <div class="container">
+        <!-- Preview Peraturan -->
+        <div class="peraturan-section">
+          <button type="button" class="btn btn-peraturan" id="btn-toggle-peraturan">
+            📜 Lihat Peraturan Pasanggiri
+          </button>
+          <div id="peraturan-viewer" class="peraturan-viewer hidden">
+            <iframe src="peraturan-pasanggiri.pdf" title="Peraturan Pasanggiri Persinas ASAD"></iframe>
+          </div>
+        </div>
+
         <h2>Form Pendaftaran</h2>
         <form id="form-pendaftaran" novalidate>
           <!-- Kategori -->

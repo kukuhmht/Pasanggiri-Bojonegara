@@ -33,6 +33,7 @@
     setupNavigation();
     setupFormEvents();
     setupEditModal();
+    setupPeraturan();
   }
 
   // Isi dropdown dari config
@@ -49,6 +50,17 @@
       kontingenSel.add(new Option(k.nama, k.nama));
       $('edit-kontingen').add(new Option(k.nama, k.nama));
       filterKontingen.add(new Option(k.nama, k.nama));
+    });
+  }
+
+  // === Peraturan Toggle ===
+  function setupPeraturan() {
+    $('btn-toggle-peraturan').addEventListener('click', () => {
+      const viewer = $('peraturan-viewer');
+      viewer.classList.toggle('hidden');
+      $('btn-toggle-peraturan').textContent = viewer.classList.contains('hidden')
+        ? '📜 Lihat Peraturan Pasanggiri'
+        : '📜 Tutup Peraturan';
     });
   }
 
