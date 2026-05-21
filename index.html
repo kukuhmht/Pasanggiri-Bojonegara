@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pasanggiri Bojonegara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <h1>Pasanggiri Bojonegara</h1>
+    <p>Sistem Pendaftaran Lomba Seni Tradisional</p>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    <!-- Form Pendaftaran -->
+    <section id="page-form" class="page active">
+      <div class="container">
+        <h2>Form Pendaftaran</h2>
+        <form id="form-pendaftaran" novalidate>
+          <!-- Kategori -->
+          <div class="form-group">
+            <label for="kategori">Kategori <span class="required">*</span></label>
+            <select id="kategori" required>
+              <option value="">— Pilih Kategori —</option>
+            </select>
+            <span class="error-msg" id="err-kategori"></span>
+          </div>
+
+          <!-- Golongan -->
+          <div class="form-group">
+            <label for="golongan">Golongan <span class="required">*</span></label>
+            <select id="golongan" required>
+              <option value="">— Pilih Golongan —</option>
+            </select>
+            <span class="error-msg" id="err-golongan"></span>
+          </div>
+
+          <!-- Kontingen -->
+          <div class="form-group">
+            <label for="kontingen">Kontingen <span class="required">*</span></label>
+            <select id="kontingen" required>
+              <option value="">— Pilih Kontingen —</option>
+            </select>
+            <span class="error-msg" id="err-kontingen"></span>
+          </div>
+
+          <!-- Nama Peserta (dinamis) -->
+          <div class="form-group">
+            <label>Nama Peserta <span class="required">*</span></label>
+            <div id="peserta-inputs">
+              <div class="peserta-row">
+                <input type="text" name="peserta[]" placeholder="Peserta 1" required>
+              </div>
+            </div>
+            <div id="peserta-actions" class="peserta-actions hidden">
+              <button type="button" id="btn-add-peserta" class="btn-icon" title="Tambah peserta">＋</button>
+              <button type="button" id="btn-remove-peserta" class="btn-icon" title="Kurangi peserta">－</button>
+            </div>
+            <span class="error-msg" id="err-peserta"></span>
+          </div>
+
+          <!-- Nama Pelatih -->
+          <div class="form-group">
+            <label for="pelatih">Nama Pelatih <span class="required">*</span></label>
+            <input type="text" id="pelatih" placeholder="Nama lengkap pelatih/pendamping" required>
+            <span class="error-msg" id="err-pelatih"></span>
+          </div>
+
+          <!-- Nomor WhatsApp -->
+          <div class="form-group">
+            <label for="nomorwa">Nomor WhatsApp <span class="required">*</span></label>
+            <input type="tel" id="nomorwa" placeholder="08xxxxxxxxxx" required>
+            <span class="error-msg" id="err-nomorwa"></span>
+          </div>
+
+          <!-- Tombol Aksi -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              <span class="btn-text">Daftar</span>
+              <span class="btn-loading hidden">⏳ Mengirim...</span>
+            </button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="page-dashboard" class="page">
+      <div class="container">
+        <h2>Dashboard Peserta</h2>
+
+        <!-- Filter Kontingen -->
+        <div class="filter-bar">
+          <select id="filter-kontingen">
+            <option value="">Semua Kontingen</option>
+          </select>
+        </div>
+
+        <!-- Summary Cards -->
+        <div id="summary-cards" class="summary-cards">
+          <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Tabel Data -->
+        <div class="table-wrapper">
+          <table id="tabel-peserta">
+            <thead>
+              <tr>
+                <th>No. Urut</th>
+                <th>Kategori</th>
+                <th>Golongan</th>
+                <th>Peserta</th>
+                <th>Pelatih</th>
+                <th>WA</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-peserta">
+              <tr><td colspan="7" class="loading-cell">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Edit -->
+  <div id="modal-edit" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3>Edit Data Peserta</h3>
+      <form id="form-edit" novalidate>
+        <input type="hidden" id="edit-nomor-urut">
+        <div class="form-group">
+          <label for="edit-kategori">Kategori</label>
+          <select id="edit-kategori" required></select>
+        </div>
+        <div class="form-group">
+          <label for="edit-golongan">Golongan</label>
+          <select id="edit-golongan" required></select>
+        </div>
+        <div class="form-group">
+          <label for="edit-kontingen">Kontingen</label>
+          <select id="edit-kontingen" required></select>
+        </div>
+        <div class="form-group">
+          <label for="edit-peserta">Nama Peserta</label>
+          <textarea id="edit-peserta" rows="3" placeholder="Pisahkan dengan koma" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-pelatih">Nama Pelatih</label>
+          <input type="text" id="edit-pelatih" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-nomorwa">Nomor WhatsApp</label>
+          <input type="tel" id="edit-nomorwa" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="page-form">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">Pendaftaran</span>
+    </button>
+    <button class="nav-btn" data-page="page-dashboard">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </button>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
