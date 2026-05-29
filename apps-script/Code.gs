@@ -153,9 +153,9 @@ function handleAdd(body) {
       body.kategori,
       body.golongan,
       body.kontingen,
-      body.namaPeserta, // sudah digabung dengan koma dari frontend
-      body.namaPelatih,
-      body.nomorWA,
+      body.namaPeserta,
+      body.namaPelatih || '',
+      body.nomorWA || '',
       timestamp
     ];
 
@@ -182,8 +182,6 @@ function handleUpdate(body) {
       sheet.getRange(rowIndex, 3).setValue(body.golongan);
       sheet.getRange(rowIndex, 4).setValue(body.kontingen);
       sheet.getRange(rowIndex, 5).setValue(body.namaPeserta);
-      sheet.getRange(rowIndex, 6).setValue(body.namaPelatih);
-      sheet.getRange(rowIndex, 7).setValue(body.nomorWA);
       return jsonResponse({ success: true, message: 'Data berhasil diperbarui' });
     }
   }

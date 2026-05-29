@@ -157,15 +157,6 @@
     inputs.forEach(inp => { if (!inp.value.trim()) emptyPeserta = true; });
     if (emptyPeserta) { showError('err-peserta', 'Semua nama peserta wajib diisi'); valid = false; }
 
-    if (!$('pelatih').value.trim()) { showError('err-pelatih', 'Nama pelatih wajib diisi'); valid = false; }
-
-    const wa = $('nomorwa').value.trim();
-    if (!wa) {
-      showError('err-nomorwa', 'Nomor WA wajib diisi'); valid = false;
-    } else if (!/^(08|628)\d{8,13}$/.test(wa)) {
-      showError('err-nomorwa', 'Format: 08xx atau 628xx, 10-15 digit'); valid = false;
-    }
-
     return valid;
   }
 
@@ -185,9 +176,7 @@
       kategori: kategoriSel.value,
       golongan: golonganSel.value,
       kontingen: kontingenSel.value,
-      namaPeserta: names.join(', '),
-      namaPelatih: $('pelatih').value.trim(),
-      nomorWA: $('nomorwa').value.trim()
+      namaPeserta: names.join(', ')
     };
 
     try {
@@ -212,7 +201,7 @@
 
   // === Dashboard ===
   async function loadDashboard() {
-    tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Memuat data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">Memuat data...</td></tr>';
     summaryCards.innerHTML = '<div class="skeleton-card"></div><div class="skeleton-card"></div>';
 
     try {
@@ -221,10 +210,10 @@
         pesertaData = res.data;
         renderDashboard();
       } else {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Gagal memuat data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">Gagal memuat data</td></tr>';
       }
     } catch {
-      tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Gagal menghubungi server</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">Gagal menghubungi server</td></tr>';
     }
   }
 
@@ -255,7 +244,7 @@
 
   function renderTable(data) {
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="loading-cell">Belum ada data</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">Belum ada data</td></tr>';
       return;
     }
     tbody.innerHTML = data.map(d => `
@@ -264,8 +253,6 @@
         <td>${d.kategori}</td>
         <td>${d.golongan}</td>
         <td>${d.namaPeserta}</td>
-        <td>${d.namaPelatih}</td>
-        <td>${d.nomorWA}</td>
         <td>
           <button class="btn-edit" onclick="App.editRow('${d.nomorUrut}')">Edit</button>
           <button class="btn-delete" onclick="App.deleteRow('${d.nomorUrut}')">Hapus</button>
@@ -290,8 +277,6 @@
     $('edit-golongan').value = item.golongan;
     $('edit-kontingen').value = item.kontingen;
     $('edit-peserta').value = item.namaPeserta;
-    $('edit-pelatih').value = item.namaPelatih;
-    $('edit-nomorwa').value = item.nomorWA;
     modalEdit.classList.remove('hidden');
   }
 
@@ -307,9 +292,7 @@
       kategori: $('edit-kategori').value,
       golongan: $('edit-golongan').value,
       kontingen: $('edit-kontingen').value,
-      namaPeserta: $('edit-peserta').value.trim(),
-      namaPelatih: $('edit-pelatih').value.trim(),
-      nomorWA: $('edit-nomorwa').value.trim()
+      namaPeserta: $('edit-peserta').value.trim()
     };
 
     try {

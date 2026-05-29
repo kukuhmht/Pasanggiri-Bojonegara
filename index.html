@@ -74,19 +74,7 @@
             <span class="error-msg" id="err-peserta"></span>
           </div>
 
-          <!-- Nama Pelatih -->
-          <div class="form-group">
-            <label for="pelatih">Nama Pelatih <span class="required">*</span></label>
-            <input type="text" id="pelatih" placeholder="Nama lengkap pelatih/pendamping" required>
-            <span class="error-msg" id="err-pelatih"></span>
-          </div>
 
-          <!-- Nomor WhatsApp -->
-          <div class="form-group">
-            <label for="nomorwa">Nomor WhatsApp <span class="required">*</span></label>
-            <input type="tel" id="nomorwa" placeholder="08xxxxxxxxxx" required>
-            <span class="error-msg" id="err-nomorwa"></span>
-          </div>
 
           <!-- Tombol Aksi -->
           <div class="form-actions">
@@ -126,13 +114,11 @@
                 <th>Kategori</th>
                 <th>Golongan</th>
                 <th>Peserta</th>
-                <th>Pelatih</th>
-                <th>WA</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="tbody-peserta">
-              <tr><td colspan="7" class="loading-cell">Memuat data...</td></tr>
+              <tr><td colspan="5" class="loading-cell">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -162,14 +148,6 @@
         <div class="form-group">
           <label for="edit-peserta">Nama Peserta</label>
           <textarea id="edit-peserta" rows="3" placeholder="Pisahkan dengan koma" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="edit-pelatih">Nama Pelatih</label>
-          <input type="text" id="edit-pelatih" required>
-        </div>
-        <div class="form-group">
-          <label for="edit-nomorwa">Nomor WhatsApp</label>
-          <input type="tel" id="edit-nomorwa" required>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Simpan</button>
