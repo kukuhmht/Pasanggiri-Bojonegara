@@ -4,6 +4,7 @@
 
 const SPREADSHEET_ID = '10uZMw8iPm8lVaWesOZ08r5xhUemERSzFsPORu4Qjo50';
 const SHEET_NAME = 'Peserta';
+const SHEET_PENILAIAN = 'Penilaian';
 
 // Kode referensi
 const KODE_KONTINGEN = {
@@ -106,6 +107,23 @@ function doGet(e) {
       return jsonResponse({ success: true, nextId: nextId });
     }
 
+    // === Handler Penilaian GET ===
+    if (action === 'getNilaiByPeserta') {
+      const nomorUrut = e.parameter.nomorUrut;
+      const data = getNilaiByPeserta(nomorUrut);
+      return jsonResponse({ success: true, data: data });
+    }
+
+    if (action === 'getAllNilai') {
+      const data = getAllNilai();
+      return jsonResponse({ success: true, data: data });
+    }
+
+    if (action === 'getRekap') {
+      const data = getRekapNilai();
+      return jsonResponse({ success: true, data: data });
+    }
+
     return jsonResponse({ success: false, error: 'Action tidak dikenali' });
   } catch (err) {
     return jsonResponse({ success: false, error: err.message });
@@ -126,6 +144,14 @@ function doPost(e) {
     }
     if (action === 'delete') {
       return handleDelete(body);
+    }
+
+    // === Handler Penilaian POST ===
+    if (action === 'addNilai') {
+      return handleAddNilai(body);
+    }
+    if (action === 'editNilai') {
+      return handleEditNilai(body);
     }
 
     return jsonResponse({ success: false, error: 'Action tidak dikenali' });
@@ -202,4 +228,171 @@ function handleDelete(body) {
     }
   }
   return jsonResponse({ success: false, error: 'Nomor urut tidak ditemukan' });
+}
+
+// ============================================
+// FITUR PENILAIAN — Handler & Helper
+// ============================================
+
+// Helper: ambil atau buat sheet Penilaian
+function getSheetPenilaian() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(SHEET_PENILAIAN);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_PENILAIAN);
+    sheet.appendRow([
+      'ID Penilaian', 'Nomor Urut Peserta', 'Kategori', 'Golongan', 'Kontingen',
+      'Nama Peserta', 'Juri', 'Waktu', 'Orisinalitas', 'Stamina', 'Kekompakan',
+      'Kreatifitas', 'Teknik Serang Bela', 'Penghayatan', 'Total Nilai', 'Timestamp'
+    ]);
+  }
+  return sheet;
+}
+
+// Ambil semua data penilaian
+function getAllNilai() {
+  const sheet = getSheetPenilaian();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  const data = sheet.getRange(2, 1, lastRow - 1, 16).getValues();
+  return data.map(row => ({
+    idPenilaian: String(row[0]),
+    nomorUrut: String(row[1]),
+    kategori: String(row[2]),
+    golongan: String(row[3]),
+    kontingen: String(row[4]),
+    namaPeserta: String(row[5]),
+    juri: String(row[6]),
+    waktu: String(row[7]),
+    orisinalitas: Number(row[8]),
+    stamina: Number(row[9]),
+    kekompakan: Number(row[10]),
+    kreatifitas: Number(row[11]),
+    teknikSerangBela: Number(row[12]),
+    penghayatan: Number(row[13]),
+    totalNilai: Number(row[14]),
+    timestamp: String(row[15])
+  }));
+}
+
+// Ambil data penilaian berdasarkan Nomor Urut peserta
+function getNilaiByPeserta(nomorUrut) {
+  const allData = getAllNilai();
+  return allData.filter(d => d.nomorUrut === nomorUrut);
+}
+
+// Tambah penilaian baru
+function handleAddNilai(body) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    const sheet = getSheetPenilaian();
+
+    // Cek duplikasi: nomorUrut + juri tidak boleh sama
+    const lastRow = sheet.getLastRow();
+    if (lastRow >= 2) {
+      const existing = sheet.getRange(2, 2, lastRow - 1, 6).getValues(); // kolom B-G
+      for (let i = 0; i < existing.length; i++) {
+        if (String(existing[i][0]) === body.nomorUrut && String(existing[i][5]) === body.juri) {
+          lock.releaseLock();
+          return jsonResponse({ success: false, error: body.juri + ' sudah memberikan penilaian untuk peserta ini.' });
+        }
+      }
+    }
+
+    const timestamp = new Date().toISOString();
+    const row = [
+      body.idPenilaian,
+      body.nomorUrut,
+      body.kategori,
+      body.golongan,
+      body.kontingen,
+      body.namaPeserta,
+      body.juri,
+      body.waktu,
+      body.orisinalitas,
+      body.stamina,
+      body.kekompakan,
+      body.kreatifitas,
+      body.teknikSerangBela,
+      body.penghayatan,
+      body.totalNilai,
+      timestamp
+    ];
+
+    sheet.appendRow(row);
+    lock.releaseLock();
+    return jsonResponse({ success: true, message: 'Nilai berhasil disimpan!' });
+  } catch (err) {
+    lock.releaseLock();
+    return jsonResponse({ success: false, error: err.message });
+  }
+}
+
+// Edit data penilaian berdasarkan ID Penilaian
+function handleEditNilai(body) {
+  const sheet = getSheetPenilaian();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return jsonResponse({ success: false, error: 'Data penilaian kosong' });
+
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === body.idPenilaian) {
+      const rowIndex = i + 2;
+      // Update nilai-nilai
+      sheet.getRange(rowIndex, 9).setValue(body.orisinalitas);
+      sheet.getRange(rowIndex, 10).setValue(body.stamina);
+      sheet.getRange(rowIndex, 11).setValue(body.kekompakan);
+      sheet.getRange(rowIndex, 12).setValue(body.kreatifitas);
+      sheet.getRange(rowIndex, 13).setValue(body.teknikSerangBela);
+      sheet.getRange(rowIndex, 14).setValue(body.penghayatan);
+      sheet.getRange(rowIndex, 15).setValue(body.totalNilai);
+      sheet.getRange(rowIndex, 16).setValue(new Date().toISOString());
+      return jsonResponse({ success: true, message: 'Nilai berhasil diperbarui' });
+    }
+  }
+  return jsonResponse({ success: false, error: 'ID Penilaian tidak ditemukan' });
+}
+
+// Rekap rata-rata nilai per peserta
+function getRekapNilai() {
+  const allNilai = getAllNilai();
+  // Ambil data peserta juga untuk info lengkap
+  const pesertaMap = {};
+
+  allNilai.forEach(n => {
+    if (!pesertaMap[n.nomorUrut]) {
+      pesertaMap[n.nomorUrut] = {
+        nomorUrut: n.nomorUrut,
+        namaPeserta: n.namaPeserta,
+        kategori: n.kategori,
+        golongan: n.golongan,
+        kontingen: n.kontingen,
+        juri1: null,
+        juri2: null,
+        juri3: null,
+        juri4: null,
+        juri5: null,
+        totalAll: 0,
+        jumlahJuri: 0
+      };
+    }
+
+    const p = pesertaMap[n.nomorUrut];
+    const juriNum = n.juri.replace('Juri ', '');
+    p['juri' + juriNum] = n.totalNilai;
+    p.totalAll += n.totalNilai;
+    p.jumlahJuri += 1;
+  });
+
+  // Hitung rata-rata
+  const result = Object.values(pesertaMap).map(p => ({
+    ...p,
+    rataRata: p.jumlahJuri > 0 ? p.totalAll / p.jumlahJuri : 0
+  }));
+
+  // Sort berdasarkan rata-rata tertinggi
+  result.sort((a, b) => b.rataRata - a.rataRata);
+  return result;
 }

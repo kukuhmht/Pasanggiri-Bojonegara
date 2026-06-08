@@ -124,6 +124,126 @@
         </div>
       </div>
     </section>
+
+    <!-- Penilaian -->
+    <section id="page-penilaian" class="page">
+      <div class="container">
+        <div class="penilaian-header">
+          <h2>Penilaian Peserta</h2>
+          <button type="button" class="btn-kunci" id="btn-kunci" title="Kunci akses penilaian">🔒 Kunci</button>
+        </div>
+
+        <!-- Sub-nav: Form & Rekap -->
+        <div class="penilaian-tabs">
+          <button class="penilaian-tab active" data-subtab="subtab-form-nilai">Form Penilaian</button>
+          <button class="penilaian-tab" data-subtab="subtab-rekap">Rekap Nilai</button>
+        </div>
+
+        <!-- Sub-tab: Form Penilaian -->
+        <div id="subtab-form-nilai" class="subtab active">
+          <!-- Langkah 1: Cari Peserta -->
+          <div class="nilai-section">
+            <h3>1. Data Peserta</h3>
+            <div class="search-row">
+              <input type="text" id="input-nomor-urut" placeholder="Masukkan Nomor Urut" aria-label="Nomor Urut Peserta">
+              <button type="button" class="btn btn-cari" id="btn-cari-peserta">Cari</button>
+            </div>
+            <span class="error-msg" id="err-nomor-urut"></span>
+
+            <div id="data-peserta-found" class="data-peserta-found hidden">
+              <div class="info-row">
+                <span class="info-label">Kategori</span>
+                <span class="info-value" id="info-kategori">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Golongan</span>
+                <span class="info-value" id="info-golongan">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Kontingen</span>
+                <span class="info-value" id="info-kontingen">-</span>
+              </div>
+              <div class="form-group">
+                <label for="input-nama-peserta">Nama Peserta</label>
+                <input type="text" id="input-nama-peserta" placeholder="Nama Peserta">
+              </div>
+              <div class="info-row">
+                <span class="info-label">Waktu Tampil</span>
+                <span class="info-value" id="info-waktu-tampil">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Langkah 2: Pilih Juri -->
+          <div id="section-juri" class="nilai-section hidden">
+            <h3>2. Pilih Juri</h3>
+            <!-- Indikator badge Juri -->
+            <div id="juri-badges" class="juri-badges"></div>
+            <div class="form-group">
+              <select id="select-juri" aria-label="Pilih Juri">
+                <option value="">— Pilih Juri —</option>
+              </select>
+              <span class="error-msg" id="err-juri"></span>
+            </div>
+          </div>
+
+          <!-- Langkah 3: Input Nilai -->
+          <div id="section-nilai" class="nilai-section hidden">
+            <h3>3. Input Nilai</h3>
+            <div id="kriteria-inputs"></div>
+            <div class="total-nilai-box" id="total-nilai-box">
+              <span class="total-label">Total Nilai</span>
+              <span class="total-value" id="total-nilai-value">—</span>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="btn-simpan-nilai">
+                <span class="btn-text">Simpan Nilai</span>
+                <span class="btn-loading hidden">⏳ Menyimpan...</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-reset-nilai">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-tab: Rekap Nilai -->
+        <div id="subtab-rekap" class="subtab">
+          <div class="rekap-filters">
+            <select id="filter-rekap-golongan" aria-label="Filter Golongan">
+              <option value="">Semua Golongan</option>
+            </select>
+            <select id="filter-rekap-kontingen" aria-label="Filter Kontingen">
+              <option value="">Semua Kontingen</option>
+            </select>
+            <button type="button" class="btn btn-cari" id="btn-refresh-rekap">🔄 Refresh</button>
+          </div>
+          <div class="table-wrapper">
+            <table id="tabel-rekap">
+              <thead>
+                <tr>
+                  <th>No. Urut</th>
+                  <th>Nama</th>
+                  <th>Kontingen</th>
+                  <th>Golongan</th>
+                  <th>J1</th>
+                  <th>J2</th>
+                  <th>J3</th>
+                  <th>J4</th>
+                  <th>J5</th>
+                  <th>Rata-rata</th>
+                  <th>Juri</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-rekap">
+                <tr><td colspan="11" class="loading-cell">Klik Refresh untuk memuat data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
 
   <!-- Modal Edit -->
@@ -157,6 +277,21 @@
     </div>
   </div>
 
+  <!-- Modal PIN Penilaian -->
+  <div id="modal-pin" class="modal hidden">
+    <div class="modal-overlay" id="modal-pin-overlay"></div>
+    <div class="modal-content modal-pin-content">
+      <div class="pin-icon">🔐</div>
+      <h3>Akses Penilaian</h3>
+      <p class="pin-desc">Masukkan PIN untuk mengakses fitur penilaian juri.</p>
+      <div class="form-group">
+        <input type="password" id="input-pin" maxlength="6" placeholder="Masukkan PIN" inputmode="numeric" aria-label="PIN Akses">
+        <span class="error-msg" id="err-pin"></span>
+      </div>
+      <button type="button" class="btn btn-pin-masuk" id="btn-pin-masuk">Masuk</button>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -169,6 +304,10 @@
     <button class="nav-btn" data-page="page-dashboard">
       <span class="nav-icon">📊</span>
       <span class="nav-label">Dashboard</span>
+    </button>
+    <button class="nav-btn" data-page="page-penilaian">
+      <span class="nav-icon">⭐</span>
+      <span class="nav-label">Penilaian</span>
     </button>
   </nav>
 

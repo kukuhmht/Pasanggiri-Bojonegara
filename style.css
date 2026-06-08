@@ -496,3 +496,370 @@ body::before {
     border-bottom: none;
   }
 }
+
+/* ============================================
+   Penilaian — Styles
+   ============================================ */
+
+/* Modal PIN */
+.modal-pin-content {
+  text-align: center;
+  max-width: 360px;
+}
+
+.modal-pin-content .pin-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.modal-pin-content h3 {
+  text-align: center;
+}
+
+.modal-pin-content .pin-desc {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 16px;
+}
+
+.modal-pin-content #input-pin {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 6px;
+  padding: 14px;
+}
+
+.btn-pin-masuk {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--emas), var(--emas-terang));
+  color: #fff;
+  cursor: pointer;
+  min-height: 48px;
+  margin-top: 12px;
+  transition: transform 0.1s;
+}
+
+.btn-pin-masuk:active {
+  transform: scale(0.97);
+}
+
+/* Penilaian Header */
+.penilaian-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.penilaian-header h2 {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.btn-kunci {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid var(--merah-error);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--merah-error);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.2s;
+}
+
+.btn-kunci:active {
+  background: var(--merah-error);
+  color: #fff;
+}
+
+/* Penilaian Sub-tabs */
+.penilaian-tabs {
+  display: flex;
+  gap: 0;
+  margin: 16px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1.5px solid var(--hijau-sedang);
+}
+
+.penilaian-tab {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  background: #fff;
+  color: var(--hijau-sedang);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.penilaian-tab.active {
+  background: var(--hijau-sedang);
+  color: #fff;
+}
+
+/* Sub-tab visibility */
+.subtab { display: none; }
+.subtab.active { display: block; }
+
+/* Nilai Section */
+.nilai-section {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.nilai-section h3 {
+  font-size: 0.95rem;
+  color: var(--hijau-tua);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* Search row */
+.search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.search-row input {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1.5px solid #d4c9a8;
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--coklat);
+}
+
+.search-row input:focus {
+  outline: none;
+  border-color: var(--hijau-sedang);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+
+.btn-cari {
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--hijau-sedang);
+  color: #fff;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.btn-cari:active {
+  opacity: 0.8;
+}
+
+/* Data peserta found */
+.data-peserta-found {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eee;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f0e6;
+}
+
+.info-label {
+  font-size: 0.82rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--hijau-tua);
+}
+
+/* Juri Badges */
+.juri-badges {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.juri-badge {
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  background: #eee;
+  color: #999;
+}
+
+.juri-badge.done {
+  background: var(--hijau-sedang);
+  color: #fff;
+}
+
+/* Kriteria Input */
+.kriteria-card {
+  background: var(--putih-gading);
+  border: 1.5px solid #e8e0d0;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.kriteria-card.invalid {
+  border-color: var(--merah-error);
+}
+
+.kriteria-card .kriteria-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--hijau-tua);
+  margin-bottom: 6px;
+}
+
+.kriteria-card input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1.5px solid #d4c9a8;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--coklat);
+  transition: border-color 0.2s;
+}
+
+.kriteria-card input[type="number"]:focus {
+  outline: none;
+  border-color: var(--hijau-sedang);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+
+.kriteria-card input[type="number"].invalid {
+  border-color: var(--merah-error);
+}
+
+.kriteria-hint {
+  font-size: 0.72rem;
+  color: #999;
+  margin-top: 4px;
+}
+
+.kriteria-error {
+  font-size: 0.72rem;
+  color: var(--merah-error);
+  margin-top: 2px;
+  min-height: 1em;
+}
+
+/* Total Nilai Box */
+.total-nilai-box {
+  background: #fff;
+  border: 2px solid var(--emas);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.total-nilai-box .total-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hijau-sedang);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.total-nilai-box .total-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #aaa;
+}
+
+.total-nilai-box.total-mid .total-value {
+  color: var(--emas);
+}
+
+.total-nilai-box.total-high .total-value {
+  color: var(--hijau-sedang);
+}
+
+/* Rekap Filters */
+.rekap-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.rekap-filters select {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1.5px solid #d4c9a8;
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+/* Tabel Rekap */
+#tabel-rekap {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  min-width: 700px;
+}
+
+#tabel-rekap thead {
+  background: var(--hijau-tua);
+  color: var(--putih-gading);
+}
+
+#tabel-rekap th {
+  padding: 8px 6px;
+  text-align: center;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#tabel-rekap td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#tabel-rekap tbody tr:hover {
+  background: rgba(45,106,79,0.04);
+}
+
+#tabel-rekap tbody tr.highlight-top {
+  background: rgba(45,106,79,0.1);
+}
+
+.badge-tertinggi {
+  font-size: 0.7rem;
+  display: block;
+  color: var(--hijau-sedang);
+  font-weight: 700;
+}
