@@ -144,13 +144,17 @@
           <!-- Langkah 1: Cari Peserta -->
           <div class="nilai-section">
             <h3>1. Data Peserta</h3>
-            <div class="search-row">
-              <input type="text" id="input-nomor-urut" placeholder="Masukkan Nomor Urut" aria-label="Nomor Urut Peserta">
-              <button type="button" class="btn btn-cari" id="btn-cari-peserta">Cari</button>
+            <div class="search-peserta-wrapper">
+              <input type="text" id="input-cari-nama" placeholder="Ketik nama peserta..." aria-label="Cari Nama Peserta" autocomplete="off">
+              <div id="suggestion-list" class="suggestion-list hidden"></div>
             </div>
             <span class="error-msg" id="err-nomor-urut"></span>
 
             <div id="data-peserta-found" class="data-peserta-found hidden">
+              <div class="info-row">
+                <span class="info-label">No. Urut</span>
+                <span class="info-value" id="info-nomor-urut">-</span>
+              </div>
               <div class="info-row">
                 <span class="info-label">Kategori</span>
                 <span class="info-value" id="info-kategori">-</span>
@@ -167,9 +171,10 @@
                 <label for="input-nama-peserta">Nama Peserta</label>
                 <input type="text" id="input-nama-peserta" placeholder="Nama Peserta">
               </div>
-              <div class="info-row">
-                <span class="info-label">Waktu Tampil</span>
-                <span class="info-value" id="info-waktu-tampil">-</span>
+              <div class="form-group">
+                <label for="input-waktu-tampil">Waktu Tampil <span class="required">*</span></label>
+                <input type="time" id="input-waktu-tampil" step="1" aria-label="Waktu Tampil">
+                <span class="error-msg" id="err-waktu-tampil"></span>
               </div>
             </div>
           </div>

@@ -82,6 +82,8 @@
         $(target).classList.add('active');
         // Load data saat buka dashboard
         if (target === 'page-dashboard') loadDashboard();
+        // Load cache peserta saat buka penilaian (untuk autocomplete)
+        if (target === 'page-penilaian') loadPesertaCache();
       });
     });
   }
@@ -378,8 +380,8 @@
   const inputPin = $('input-pin');
   const btnPinMasuk = $('btn-pin-masuk');
   const btnKunci = $('btn-kunci');
-  const inputNomorUrut = $('input-nomor-urut');
-  const btnCariPeserta = $('btn-cari-peserta');
+  const inputCariNama = $('input-cari-nama');
+  const suggestionList = $('suggestion-list');
   const dataPesertaFound = $('data-peserta-found');
   const sectionJuri = $('section-juri');
   const sectionNilai = $('section-nilai');
@@ -390,6 +392,9 @@
   const btnSimpanNilai = $('btn-simpan-nilai');
   const btnResetNilai = $('btn-reset-nilai');
   const btnRefreshRekap = $('btn-refresh-rekap');
+
+  // Cache data peserta untuk pencarian
+  let allPesertaCache = [];
 
   // === Inisialisasi Penilaian ===
   function initPenilaian() {
@@ -428,6 +433,8 @@
       $('err-pin').textContent = '';
       // Pindah ke halaman penilaian
       switchToPage('page-penilaian');
+      // Load cache peserta untuk autocomplete
+      loadPesertaCache();
     } else {
       // PIN salah
       $('err-pin').textContent = 'PIN tidak valid. Silakan coba lagi.';
@@ -476,50 +483,85 @@
     });
   }
 
-  // === Cari Peserta ===
+  // === Cari Peserta (Autocomplete by Nama) ===
   function setupCariPeserta() {
-    btnCariPeserta.addEventListener('click', cariPeserta);
-    inputNomorUrut.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') cariPeserta();
+    inputCariNama.addEventListener('input', handleSearchInput);
+    inputCariNama.addEventListener('focus', handleSearchInput);
+    // Tutup suggestion saat klik di luar
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-peserta-wrapper')) {
+        suggestionList.classList.add('hidden');
+      }
     });
   }
 
-  async function cariPeserta() {
-    const nomorUrut = inputNomorUrut.value.trim();
-    if (!nomorUrut) {
-      $('err-nomor-urut').textContent = 'Masukkan nomor urut peserta.';
-      return;
-    }
-    $('err-nomor-urut').textContent = '';
-
+  // Load semua peserta ke cache (dipanggil saat masuk halaman penilaian)
+  async function loadPesertaCache() {
     try {
       const res = await apiGet('getAll');
       if (res.success) {
-        const found = res.data.find(d => d.nomorUrut === nomorUrut);
-        if (found) {
-          currentPeserta = found;
-          tampilkanDataPeserta(found);
-          // Ambil data juri yang sudah menilai peserta ini
-          await cekJuriSudahNilai(nomorUrut);
-        } else {
-          $('err-nomor-urut').textContent = 'Nomor urut tidak ditemukan.';
-          resetFormPenilaian();
-        }
+        allPesertaCache = res.data || [];
       }
     } catch {
-      $('err-nomor-urut').textContent = 'Gagal menghubungi server.';
+      allPesertaCache = [];
     }
   }
 
+  function handleSearchInput() {
+    const keyword = inputCariNama.value.trim().toLowerCase();
+    if (!keyword) {
+      suggestionList.classList.add('hidden');
+      return;
+    }
+
+    // Filter peserta berdasarkan nama
+    const matches = allPesertaCache.filter(p =>
+      p.namaPeserta.toLowerCase().includes(keyword)
+    ).slice(0, 10); // batasi 10 hasil
+
+    renderSuggestions(matches);
+  }
+
+  function renderSuggestions(matches) {
+    if (!matches.length) {
+      suggestionList.innerHTML = '<div class="suggestion-empty">Tidak ada peserta ditemukan</div>';
+      suggestionList.classList.remove('hidden');
+      return;
+    }
+
+    suggestionList.innerHTML = matches.map((p, idx) => `
+      <div class="suggestion-item" data-idx="${idx}">
+        <div class="suggestion-name">${p.namaPeserta}</div>
+        <div class="suggestion-meta">${p.nomorUrut} · ${p.kategori} · ${p.golongan} · ${p.kontingen}</div>
+      </div>
+    `).join('');
+
+    // Attach click handler
+    suggestionList.querySelectorAll('.suggestion-item').forEach((el, idx) => {
+      el.addEventListener('click', () => {
+        pilihPeserta(matches[idx]);
+      });
+    });
+
+    suggestionList.classList.remove('hidden');
+  }
+
+  async function pilihPeserta(data) {
+    currentPeserta = data;
+    inputCariNama.value = data.namaPeserta;
+    suggestionList.classList.add('hidden');
+    tampilkanDataPeserta(data);
+    await cekJuriSudahNilai(data.nomorUrut);
+  }
+
   function tampilkanDataPeserta(data) {
+    $('info-nomor-urut').textContent = data.nomorUrut;
     $('info-kategori').textContent = data.kategori;
     $('info-golongan').textContent = data.golongan;
     $('info-kontingen').textContent = data.kontingen;
     $('input-nama-peserta').value = data.namaPeserta;
-    // Set waktu tampil
-    const now = new Date();
-    const waktu = now.toTimeString().split(' ')[0]; // HH:MM:SS
-    $('info-waktu-tampil').textContent = waktu;
+    // Waktu tampil dikosongkan, diinput manual oleh juri
+    $('input-waktu-tampil').value = '';
     dataPesertaFound.classList.remove('hidden');
     sectionJuri.classList.remove('hidden');
     sectionNilai.classList.remove('hidden');
@@ -677,6 +719,15 @@
       return;
     }
 
+    // Validasi waktu tampil
+    const waktu = $('input-waktu-tampil').value.trim();
+    if (!waktu) {
+      $('err-waktu-tampil').textContent = 'Waktu tampil wajib diisi.';
+      showToast('Waktu tampil wajib diisi', 'error');
+      return;
+    }
+    $('err-waktu-tampil').textContent = '';
+
     // Hitung total
     const totalNilai = nilaiArr.reduce((a, b) => a + b, 0);
 
@@ -684,8 +735,6 @@
     const juriKey = juri.replace(' ', '').toUpperCase(); // "Juri 1" → "JURI1"
     const idPenilaian = `NLP-${currentPeserta.nomorUrut}-${juriKey}`;
 
-    // Waktu
-    const waktu = $('info-waktu-tampil').textContent;
     const namaPeserta = $('input-nama-peserta').value.trim();
 
     const payload = {
@@ -747,11 +796,15 @@
   function resetFormPenilaian() {
     currentPeserta = null;
     nilaiJuriSudah = [];
+    inputCariNama.value = '';
+    suggestionList.classList.add('hidden');
     dataPesertaFound.classList.add('hidden');
     sectionJuri.classList.add('hidden');
     sectionNilai.classList.add('hidden');
     resetNilaiInputs();
     $('juri-badges').innerHTML = '';
+    $('input-waktu-tampil').value = '';
+    $('err-waktu-tampil').textContent = '';
   }
 
   // === Rekap Nilai ===

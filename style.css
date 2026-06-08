@@ -650,6 +650,75 @@ body::before {
   box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
 }
 
+/* Search peserta autocomplete */
+.search-peserta-wrapper {
+  position: relative;
+}
+
+.search-peserta-wrapper input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1.5px solid #d4c9a8;
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--coklat);
+}
+
+.search-peserta-wrapper input:focus {
+  outline: none;
+  border-color: var(--hijau-sedang);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+
+.suggestion-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #d4c9a8;
+  border-radius: var(--radius);
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.suggestion-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0e8d8;
+  transition: background 0.15s;
+}
+
+.suggestion-item:last-child { border-bottom: none; }
+
+.suggestion-item:active,
+.suggestion-item:hover {
+  background: rgba(45,106,79,0.08);
+}
+
+.suggestion-name {
+  font-weight: 600;
+  color: var(--hijau-tua);
+  font-size: 0.9rem;
+}
+
+.suggestion-meta {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.suggestion-empty {
+  padding: 14px;
+  text-align: center;
+  color: #999;
+  font-size: 0.85rem;
+}
+
 .btn-cari {
   padding: 12px 20px;
   font-size: 0.9rem;
