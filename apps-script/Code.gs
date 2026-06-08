@@ -372,7 +372,9 @@ function handleEditNilai(body) {
   return jsonResponse({ success: false, error: 'ID Penilaian tidak ditemukan' });
 }
 
-// Rekap rata-rata nilai per peserta
+// Rekap nilai per peserta
+// Rumus rata-rata (nilai akhir): jika jumlah juri >= 3 → sum semua juri - nilai tertinggi - nilai terendah
+//                                jika jumlah juri < 3  → sum semua juri (data belum cukup untuk eliminasi)
 function getRekapNilai() {
   const allNilai = getAllNilai();
   
@@ -396,7 +398,9 @@ function getRekapNilai() {
         juri3: null,
         juri4: null,
         juri5: null,
-        totalAll: 0,
+        nilaiTertinggi: 0,
+        nilaiTerendah: 0,
+        totalSemua: 0,
         jumlahJuri: 0,
         rataRata: 0
       };
@@ -407,16 +411,51 @@ function getRekapNilai() {
     var juriStr = String(n.juri).trim();
     var juriNum = juriStr.replace('Juri ', '');
     p['juri' + juriNum] = n.totalNilai;
-    p.totalAll += n.totalNilai;
     p.jumlahJuri += 1;
   }
 
-  // Konversi map ke array dan hitung rata-rata
+  // Hitung nilai akhir sesuai rumus: sum - max - min (jika juri >= 3)
   var keys = Object.keys(pesertaMap);
   var result = [];
   for (var j = 0; j < keys.length; j++) {
     var item = pesertaMap[keys[j]];
-    item.rataRata = item.jumlahJuri > 0 ? item.totalAll / item.jumlahJuri : 0;
+    
+    // Kumpulkan semua nilai juri yang sudah dinilai
+    var nilaiJuri = [];
+    if (item.juri1 !== null) nilaiJuri.push(item.juri1);
+    if (item.juri2 !== null) nilaiJuri.push(item.juri2);
+    if (item.juri3 !== null) nilaiJuri.push(item.juri3);
+    if (item.juri4 !== null) nilaiJuri.push(item.juri4);
+    if (item.juri5 !== null) nilaiJuri.push(item.juri5);
+
+    if (nilaiJuri.length === 0) {
+      item.totalSemua = 0;
+      item.rataRata = 0;
+      item.nilaiTertinggi = 0;
+      item.nilaiTerendah = 0;
+    } else {
+      var sumAll = 0;
+      var max = nilaiJuri[0];
+      var min = nilaiJuri[0];
+      for (var k = 0; k < nilaiJuri.length; k++) {
+        sumAll += nilaiJuri[k];
+        if (nilaiJuri[k] > max) max = nilaiJuri[k];
+        if (nilaiJuri[k] < min) min = nilaiJuri[k];
+      }
+      
+      item.totalSemua = sumAll;
+      item.nilaiTertinggi = max;
+      item.nilaiTerendah = min;
+
+      if (nilaiJuri.length >= 3) {
+        // Rumus: sum - max - min (eliminasi tertinggi & terendah)
+        item.rataRata = sumAll - max - min;
+      } else {
+        // Belum cukup data untuk eliminasi, pakai sum semua
+        item.rataRata = sumAll;
+      }
+    }
+
     result.push(item);
   }
 

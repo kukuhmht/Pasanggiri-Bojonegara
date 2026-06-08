@@ -646,32 +646,31 @@
 
   function hitungTotalNilai() {
     let total = 0;
-    let allFilled = true;
+    let adaInput = false;
     let hasInvalid = false;
 
     CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
       const input = $(`nilai-${i}`);
       const val = parseFloat(input.value);
-      if (input.value === '') {
-        allFilled = false;
-      } else if (isNaN(val) || val < k.min || val > k.max) {
-        hasInvalid = true;
-      } else {
-        total += val;
+      if (input.value !== '') {
+        adaInput = true;
+        if (isNaN(val) || val < k.min || val > k.max) {
+          hasInvalid = true;
+        } else {
+          total += val;
+        }
       }
     });
 
     // Update tampilan total
     totalNilaiBox.classList.remove('total-mid', 'total-high');
-    if (!allFilled || hasInvalid) {
-      totalNilaiValue.textContent = allFilled && !hasInvalid ? total : '—';
-      if (allFilled && !hasInvalid) {
-        // Warna berdasarkan total
-        if (total >= 185) totalNilaiBox.classList.add('total-high');
-        else if (total >= 170) totalNilaiBox.classList.add('total-mid');
-      }
+    if (!adaInput) {
+      totalNilaiValue.textContent = '—';
+    } else if (hasInvalid) {
+      totalNilaiValue.textContent = total;
     } else {
       totalNilaiValue.textContent = total;
+      // Warna berdasarkan total
       if (total >= 185) totalNilaiBox.classList.add('total-high');
       else if (total >= 170) totalNilaiBox.classList.add('total-mid');
     }
@@ -704,18 +703,24 @@
       return;
     }
 
-    // Validasi semua nilai
+    // Validasi nilai: tidak wajib diisi, tapi jika diisi harus valid range
     let allValid = true;
     const nilaiArr = [];
     CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      if (!validateNilaiInput(i)) allValid = false;
-      const val = parseFloat($(`nilai-${i}`).value);
-      if (isNaN(val)) allValid = false;
-      nilaiArr.push(val);
+      const inputVal = $(`nilai-${i}`).value;
+      if (inputVal === '') {
+        // Kosong = tidak dinilai, simpan sebagai null/empty
+        nilaiArr.push('');
+      } else {
+        if (!validateNilaiInput(i)) allValid = false;
+        const val = parseFloat(inputVal);
+        if (isNaN(val)) allValid = false;
+        nilaiArr.push(val);
+      }
     });
 
     if (!allValid) {
-      showToast('Periksa kembali semua input nilai', 'error');
+      showToast('Periksa kembali input nilai (di luar range)', 'error');
       return;
     }
 
@@ -728,8 +733,8 @@
     }
     $('err-waktu-tampil').textContent = '';
 
-    // Hitung total
-    const totalNilai = nilaiArr.reduce((a, b) => a + b, 0);
+    // Hitung total (skip yang kosong)
+    const totalNilai = nilaiArr.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
 
     // Buat ID Penilaian: NLP-{NomorUrut}-{Juri}
     const juriKey = juri.replace(' ', '').toUpperCase(); // "Juri 1" → "JURI1"
@@ -827,7 +832,7 @@
 
   async function loadRekap() {
     const tbodyRekap = $('tbody-rekap');
-    tbodyRekap.innerHTML = '<tr><td colspan="11" class="loading-cell">Memuat data...</td></tr>';
+    tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Memuat data...</td></tr>';
 
     try {
       const res = await apiGet('getRekap');
@@ -835,10 +840,10 @@
         rekapData = res.data || [];
         renderRekap();
       } else {
-        tbodyRekap.innerHTML = '<tr><td colspan="11" class="loading-cell">Gagal memuat data</td></tr>';
+        tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Gagal memuat data</td></tr>';
       }
     } catch {
-      tbodyRekap.innerHTML = '<tr><td colspan="11" class="loading-cell">Gagal menghubungi server</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Gagal menghubungi server</td></tr>';
     }
   }
 
@@ -852,7 +857,7 @@
     if (kontFilter) filtered = filtered.filter(d => d.kontingen === kontFilter);
 
     if (!filtered.length) {
-      tbodyRekap.innerHTML = '<tr><td colspan="11" class="loading-cell">Belum ada data penilaian</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Belum ada data penilaian</td></tr>';
       return;
     }
 
@@ -868,18 +873,21 @@
 
     tbodyRekap.innerHTML = filtered.map(d => {
       const isTop = d.rataRata > 0 && d.rataRata === topByGolongan[d.golongan];
+      const adaCukupJuri = d.jumlahJuri >= 3;
       return `
         <tr class="${isTop ? 'highlight-top' : ''}">
           <td>${d.nomorUrut}</td>
           <td>${d.namaPeserta}</td>
           <td>${d.kontingen}</td>
           <td>${d.golongan}</td>
-          <td>${d.juri1 || '-'}</td>
-          <td>${d.juri2 || '-'}</td>
-          <td>${d.juri3 || '-'}</td>
-          <td>${d.juri4 || '-'}</td>
-          <td>${d.juri5 || '-'}</td>
-          <td>${d.rataRata > 0 ? d.rataRata.toFixed(1) : '-'}${isTop ? '<span class="badge-tertinggi">🥇 Tertinggi</span>' : ''}</td>
+          <td>${d.juri1 !== null && d.juri1 !== undefined ? d.juri1 : '-'}</td>
+          <td>${d.juri2 !== null && d.juri2 !== undefined ? d.juri2 : '-'}</td>
+          <td>${d.juri3 !== null && d.juri3 !== undefined ? d.juri3 : '-'}</td>
+          <td>${d.juri4 !== null && d.juri4 !== undefined ? d.juri4 : '-'}</td>
+          <td>${d.juri5 !== null && d.juri5 !== undefined ? d.juri5 : '-'}</td>
+          <td>${adaCukupJuri && d.nilaiTertinggi ? d.nilaiTertinggi : '-'}</td>
+          <td>${adaCukupJuri && d.nilaiTerendah ? d.nilaiTerendah : '-'}</td>
+          <td>${d.rataRata > 0 ? d.rataRata : '-'}${isTop ? '<span class="badge-tertinggi">🥇 Tertinggi</span>' : ''}</td>
           <td>${d.jumlahJuri}/5</td>
         </tr>
       `;

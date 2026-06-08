@@ -896,7 +896,7 @@ body::before {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
-  min-width: 700px;
+  min-width: 850px;
 }
 
 #tabel-rekap thead {
