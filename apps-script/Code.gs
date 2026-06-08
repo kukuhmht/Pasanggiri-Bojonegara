@@ -237,7 +237,17 @@ function handleDelete(body) {
 // Helper: ambil atau buat sheet Penilaian
 function getSheetPenilaian() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  let sheet = ss.getSheetByName(SHEET_PENILAIAN);
+  var sheet = ss.getSheetByName(SHEET_PENILAIAN);
+  if (!sheet) {
+    // Coba cari dengan variasi nama (jaga-jaga ada spasi/case berbeda)
+    var sheets = ss.getSheets();
+    for (var i = 0; i < sheets.length; i++) {
+      if (sheets[i].getName().trim().toLowerCase() === SHEET_PENILAIAN.toLowerCase()) {
+        sheet = sheets[i];
+        break;
+      }
+    }
+  }
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_PENILAIAN);
     sheet.appendRow([
@@ -255,24 +265,31 @@ function getAllNilai() {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
   const data = sheet.getRange(2, 1, lastRow - 1, 16).getValues();
-  return data.map(row => ({
-    idPenilaian: String(row[0]),
-    nomorUrut: String(row[1]),
-    kategori: String(row[2]),
-    golongan: String(row[3]),
-    kontingen: String(row[4]),
-    namaPeserta: String(row[5]),
-    juri: String(row[6]),
-    waktu: String(row[7]),
-    orisinalitas: Number(row[8]),
-    stamina: Number(row[9]),
-    kekompakan: Number(row[10]),
-    kreatifitas: Number(row[11]),
-    teknikSerangBela: Number(row[12]),
-    penghayatan: Number(row[13]),
-    totalNilai: Number(row[14]),
-    timestamp: String(row[15])
-  }));
+  var result = [];
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    // Skip baris kosong (jika kolom A kosong)
+    if (!row[0] || String(row[0]).trim() === '') continue;
+    result.push({
+      idPenilaian: String(row[0]),
+      nomorUrut: String(row[1]),
+      kategori: String(row[2]),
+      golongan: String(row[3]),
+      kontingen: String(row[4]),
+      namaPeserta: String(row[5]),
+      juri: String(row[6]),
+      waktu: String(row[7]),
+      orisinalitas: Number(row[8]) || 0,
+      stamina: Number(row[9]) || 0,
+      kekompakan: Number(row[10]) || 0,
+      kreatifitas: Number(row[11]) || 0,
+      teknikSerangBela: Number(row[12]) || 0,
+      penghayatan: Number(row[13]) || 0,
+      totalNilai: Number(row[14]) || 0,
+      timestamp: String(row[15])
+    });
+  }
+  return result;
 }
 
 // Ambil data penilaian berdasarkan Nomor Urut peserta
@@ -358,10 +375,15 @@ function handleEditNilai(body) {
 // Rekap rata-rata nilai per peserta
 function getRekapNilai() {
   const allNilai = getAllNilai();
-  // Ambil data peserta juga untuk info lengkap
+  
+  // Jika tidak ada data, return array kosong
+  if (!allNilai || allNilai.length === 0) return [];
+  
+  // Buat map peserta
   const pesertaMap = {};
 
-  allNilai.forEach(n => {
+  for (var i = 0; i < allNilai.length; i++) {
+    var n = allNilai[i];
     if (!pesertaMap[n.nomorUrut]) {
       pesertaMap[n.nomorUrut] = {
         nomorUrut: n.nomorUrut,
@@ -375,24 +397,30 @@ function getRekapNilai() {
         juri4: null,
         juri5: null,
         totalAll: 0,
-        jumlahJuri: 0
+        jumlahJuri: 0,
+        rataRata: 0
       };
     }
 
-    const p = pesertaMap[n.nomorUrut];
-    const juriNum = n.juri.replace('Juri ', '');
+    var p = pesertaMap[n.nomorUrut];
+    // Ambil nomor juri dari string "Juri 1", "Juri 2", dst.
+    var juriStr = String(n.juri).trim();
+    var juriNum = juriStr.replace('Juri ', '');
     p['juri' + juriNum] = n.totalNilai;
     p.totalAll += n.totalNilai;
     p.jumlahJuri += 1;
-  });
+  }
 
-  // Hitung rata-rata
-  const result = Object.values(pesertaMap).map(p => ({
-    ...p,
-    rataRata: p.jumlahJuri > 0 ? p.totalAll / p.jumlahJuri : 0
-  }));
+  // Konversi map ke array dan hitung rata-rata
+  var keys = Object.keys(pesertaMap);
+  var result = [];
+  for (var j = 0; j < keys.length; j++) {
+    var item = pesertaMap[keys[j]];
+    item.rataRata = item.jumlahJuri > 0 ? item.totalAll / item.jumlahJuri : 0;
+    result.push(item);
+  }
 
   // Sort berdasarkan rata-rata tertinggi
-  result.sort((a, b) => b.rataRata - a.rataRata);
+  result.sort(function(a, b) { return b.rataRata - a.rataRata; });
   return result;
 }
