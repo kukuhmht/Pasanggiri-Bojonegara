@@ -153,6 +153,9 @@ function doPost(e) {
     if (action === 'editNilai') {
       return handleEditNilai(body);
     }
+    if (action === 'deleteNilai') {
+      return handleDeleteNilai(body);
+    }
 
     return jsonResponse({ success: false, error: 'Action tidak dikenali' });
   } catch (err) {
@@ -357,19 +360,36 @@ function handleEditNilai(body) {
   for (let i = 0; i < ids.length; i++) {
     if (String(ids[i][0]) === body.idPenilaian) {
       const rowIndex = i + 2;
-      // Update nilai-nilai
-      sheet.getRange(rowIndex, 9).setValue(body.orisinalitas);
-      sheet.getRange(rowIndex, 10).setValue(body.stamina);
-      sheet.getRange(rowIndex, 11).setValue(body.kekompakan);
-      sheet.getRange(rowIndex, 12).setValue(body.kreatifitas);
-      sheet.getRange(rowIndex, 13).setValue(body.teknikSerangBela);
-      sheet.getRange(rowIndex, 14).setValue(body.penghayatan);
+      // Update nilai-nilai (kosong = '' = tidak dinilai)
+      sheet.getRange(rowIndex, 9).setValue(body.orisinalitas !== undefined ? body.orisinalitas : '');
+      sheet.getRange(rowIndex, 10).setValue(body.stamina !== undefined ? body.stamina : '');
+      sheet.getRange(rowIndex, 11).setValue(body.kekompakan !== undefined ? body.kekompakan : '');
+      sheet.getRange(rowIndex, 12).setValue(body.kreatifitas !== undefined ? body.kreatifitas : '');
+      sheet.getRange(rowIndex, 13).setValue(body.teknikSerangBela !== undefined ? body.teknikSerangBela : '');
+      sheet.getRange(rowIndex, 14).setValue(body.penghayatan !== undefined ? body.penghayatan : '');
       sheet.getRange(rowIndex, 15).setValue(body.totalNilai);
       sheet.getRange(rowIndex, 16).setValue(new Date().toISOString());
       return jsonResponse({ success: true, message: 'Nilai berhasil diperbarui' });
     }
   }
   return jsonResponse({ success: false, error: 'ID Penilaian tidak ditemukan' });
+}
+
+// Hapus data penilaian berdasarkan Nomor Urut + Juri
+function handleDeleteNilai(body) {
+  const sheet = getSheetPenilaian();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return jsonResponse({ success: false, error: 'Data penilaian kosong' });
+
+  // Cari berdasarkan kolom B (Nomor Urut) dan G (Juri)
+  const data = sheet.getRange(2, 2, lastRow - 1, 6).getValues(); // kolom B sampai G
+  for (let i = 0; i < data.length; i++) {
+    if (String(data[i][0]) === body.nomorUrut && String(data[i][5]) === body.juri) {
+      sheet.deleteRow(i + 2);
+      return jsonResponse({ success: true, message: 'Nilai berhasil dihapus' });
+    }
+  }
+  return jsonResponse({ success: false, error: 'Data nilai tidak ditemukan' });
 }
 
 // Rekap nilai per peserta

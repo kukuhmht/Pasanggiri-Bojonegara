@@ -218,8 +218,8 @@
             <select id="filter-rekap-golongan" aria-label="Filter Golongan">
               <option value="">Semua Golongan</option>
             </select>
-            <select id="filter-rekap-kontingen" aria-label="Filter Kontingen">
-              <option value="">Semua Kontingen</option>
+            <select id="filter-rekap-kategori" aria-label="Filter Kategori">
+              <option value="">Semua Kategori</option>
             </select>
             <button type="button" class="btn btn-cari" id="btn-refresh-rekap">🔄 Refresh</button>
           </div>
@@ -230,6 +230,7 @@
                   <th>No. Urut</th>
                   <th>Nama</th>
                   <th>Kontingen</th>
+                  <th>Kategori</th>
                   <th>Golongan</th>
                   <th>J1</th>
                   <th>J2</th>
@@ -243,7 +244,7 @@
                 </tr>
               </thead>
               <tbody id="tbody-rekap">
-                <tr><td colspan="13" class="loading-cell">Klik Refresh untuk memuat data</td></tr>
+                <tr><td colspan="14" class="loading-cell">Klik Refresh untuk memuat data</td></tr>
               </tbody>
             </table>
           </div>
@@ -281,6 +282,32 @@
           <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Batal</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit Nilai per Juri -->
+  <div id="modal-edit-nilai" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-edit-nilai-content">
+      <h3>Edit Nilai Juri</h3>
+      <div class="edit-nilai-meta">
+        <div class="meta-row"><span class="meta-label">Peserta</span><span class="meta-value" id="edit-nilai-peserta">-</span></div>
+        <div class="meta-row"><span class="meta-label">No. Urut</span><span class="meta-value" id="edit-nilai-nomor">-</span></div>
+        <div class="meta-row"><span class="meta-label">Juri</span><span class="meta-value" id="edit-nilai-juri">-</span></div>
+      </div>
+      <input type="hidden" id="edit-nilai-id">
+      <div id="edit-kriteria-inputs"></div>
+      <div class="total-nilai-box" id="edit-total-nilai-box">
+        <span class="total-label">Total Nilai</span>
+        <span class="total-value" id="edit-total-nilai-value">—</span>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" id="btn-update-nilai">
+          <span class="btn-text">Update Nilai</span>
+          <span class="btn-loading hidden">⏳ Menyimpan...</span>
+        </button>
+        <button type="button" class="btn btn-secondary" id="btn-cancel-edit-nilai">Batal</button>
+      </div>
     </div>
   </div>
 

@@ -932,3 +932,76 @@ body::before {
   color: var(--hijau-sedang);
   font-weight: 700;
 }
+
+/* Cell Juri yang sudah dinilai (clickable untuk edit/hapus) */
+.juri-cell {
+  cursor: default;
+  position: relative;
+}
+
+.juri-cell.has-nilai {
+  cursor: pointer;
+  color: var(--hijau-tua);
+  font-weight: 600;
+}
+
+.juri-cell.has-nilai:hover {
+  background: rgba(45,106,79,0.1);
+}
+
+.juri-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.btn-mini {
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 24px;
+}
+
+.btn-mini-edit {
+  background: var(--emas-terang);
+  color: #fff;
+}
+
+.btn-mini-delete {
+  background: var(--merah-error);
+  color: #fff;
+}
+
+/* Modal Edit Nilai */
+.modal-edit-nilai-content {
+  max-width: 480px;
+}
+
+.edit-nilai-meta {
+  background: var(--putih-gading);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--emas);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.85rem;
+}
+
+.meta-label {
+  color: #888;
+  font-weight: 500;
+}
+
+.meta-value {
+  color: var(--hijau-tua);
+  font-weight: 600;
+}

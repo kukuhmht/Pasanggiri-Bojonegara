@@ -405,6 +405,7 @@
     setupKriteriaInputs();
     setupNilaiActions();
     setupRekapFilters();
+    setupEditNilaiModal();
     populateRekapDropdowns();
   }
 
@@ -815,24 +816,24 @@
   // === Rekap Nilai ===
   function populateRekapDropdowns() {
     const filterGolongan = $('filter-rekap-golongan');
-    const filterKontingen = $('filter-rekap-kontingen');
+    const filterKategori = $('filter-rekap-kategori');
     CONFIG.GOLONGAN.forEach(g => {
       filterGolongan.add(new Option(g.nama, g.nama));
     });
-    CONFIG.KONTINGEN.forEach(k => {
-      filterKontingen.add(new Option(k.nama, k.nama));
+    CONFIG.KATEGORI.forEach(k => {
+      filterKategori.add(new Option(k.nama, k.nama));
     });
   }
 
   function setupRekapFilters() {
     btnRefreshRekap.addEventListener('click', loadRekap);
     $('filter-rekap-golongan').addEventListener('change', renderRekap);
-    $('filter-rekap-kontingen').addEventListener('change', renderRekap);
+    $('filter-rekap-kategori').addEventListener('change', renderRekap);
   }
 
   async function loadRekap() {
     const tbodyRekap = $('tbody-rekap');
-    tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Memuat data...</td></tr>';
+    tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Memuat data...</td></tr>';
 
     try {
       const res = await apiGet('getRekap');
@@ -840,24 +841,24 @@
         rekapData = res.data || [];
         renderRekap();
       } else {
-        tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Gagal memuat data</td></tr>';
+        tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Gagal memuat data</td></tr>';
       }
     } catch {
-      tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Gagal menghubungi server</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Gagal menghubungi server</td></tr>';
     }
   }
 
   function renderRekap() {
     const golFilter = $('filter-rekap-golongan').value;
-    const kontFilter = $('filter-rekap-kontingen').value;
+    const katFilter = $('filter-rekap-kategori').value;
     const tbodyRekap = $('tbody-rekap');
 
     let filtered = [...rekapData];
     if (golFilter) filtered = filtered.filter(d => d.golongan === golFilter);
-    if (kontFilter) filtered = filtered.filter(d => d.kontingen === kontFilter);
+    if (katFilter) filtered = filtered.filter(d => d.kategori === katFilter);
 
     if (!filtered.length) {
-      tbodyRekap.innerHTML = '<tr><td colspan="13" class="loading-cell">Belum ada data penilaian</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Belum ada data penilaian</td></tr>';
       return;
     }
 
@@ -874,17 +875,33 @@
     tbodyRekap.innerHTML = filtered.map(d => {
       const isTop = d.rataRata > 0 && d.rataRata === topByGolongan[d.golongan];
       const adaCukupJuri = d.jumlahJuri >= 3;
+      // Render cell juri dengan tombol edit/hapus jika sudah ada nilai
+      const juriCell = (juriNum) => {
+        const nilai = d['juri' + juriNum];
+        if (nilai === null || nilai === undefined) {
+          return `<td class="juri-cell">-</td>`;
+        }
+        return `<td class="juri-cell has-nilai">
+          <div>${nilai}</div>
+          <div class="juri-actions">
+            <button class="btn-mini btn-mini-edit" onclick="App.editNilai('${d.nomorUrut}','Juri ${juriNum}')" title="Edit">✏️</button>
+            <button class="btn-mini btn-mini-delete" onclick="App.hapusNilai('${d.nomorUrut}','Juri ${juriNum}')" title="Hapus">🗑️</button>
+          </div>
+        </td>`;
+      };
+
       return `
         <tr class="${isTop ? 'highlight-top' : ''}">
           <td>${d.nomorUrut}</td>
           <td>${d.namaPeserta}</td>
           <td>${d.kontingen}</td>
+          <td>${d.kategori}</td>
           <td>${d.golongan}</td>
-          <td>${d.juri1 !== null && d.juri1 !== undefined ? d.juri1 : '-'}</td>
-          <td>${d.juri2 !== null && d.juri2 !== undefined ? d.juri2 : '-'}</td>
-          <td>${d.juri3 !== null && d.juri3 !== undefined ? d.juri3 : '-'}</td>
-          <td>${d.juri4 !== null && d.juri4 !== undefined ? d.juri4 : '-'}</td>
-          <td>${d.juri5 !== null && d.juri5 !== undefined ? d.juri5 : '-'}</td>
+          ${juriCell(1)}
+          ${juriCell(2)}
+          ${juriCell(3)}
+          ${juriCell(4)}
+          ${juriCell(5)}
           <td>${adaCukupJuri && d.nilaiTertinggi ? d.nilaiTertinggi : '-'}</td>
           <td>${adaCukupJuri && d.nilaiTerendah ? d.nilaiTerendah : '-'}</td>
           <td>${d.rataRata > 0 ? d.rataRata : '-'}${isTop ? '<span class="badge-tertinggi">🥇 Tertinggi</span>' : ''}</td>
@@ -893,6 +910,194 @@
       `;
     }).join('');
   }
+
+  // === Edit & Hapus Nilai per Juri ===
+  let editingNilaiData = null; // simpan data yang sedang diedit
+
+  function setupEditNilaiModal() {
+    $('btn-cancel-edit-nilai').addEventListener('click', closeEditNilaiModal);
+    $('modal-edit-nilai').querySelector('.modal-overlay').addEventListener('click', closeEditNilaiModal);
+    $('btn-update-nilai').addEventListener('click', updateNilai);
+
+    // Setup input kriteria untuk modal edit
+    $('edit-kriteria-inputs').innerHTML = CONFIG.KRITERIA_PENILAIAN.map((k, i) => `
+      <div class="kriteria-card" id="edit-kriteria-card-${i}">
+        <div class="kriteria-name">${i + 1}. ${k.nama}</div>
+        <input type="number" id="edit-nilai-${i}" min="${k.min}" max="${k.max}" placeholder="${k.min}" aria-label="${k.nama}">
+        <div class="kriteria-hint">(${k.min} – ${k.max})</div>
+        <div class="kriteria-error" id="err-edit-nilai-${i}"></div>
+      </div>
+    `).join('');
+
+    // Live total kalkulasi
+    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
+      $(`edit-nilai-${i}`).addEventListener('input', hitungTotalNilaiEdit);
+    });
+  }
+
+  function hitungTotalNilaiEdit() {
+    let total = 0;
+    let adaInput = false;
+    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
+      const input = $(`edit-nilai-${i}`);
+      const val = parseFloat(input.value);
+      const card = $(`edit-kriteria-card-${i}`);
+      const errEl = $(`err-edit-nilai-${i}`);
+
+      if (input.value === '') {
+        card.classList.remove('invalid');
+        input.classList.remove('invalid');
+        errEl.textContent = '';
+      } else {
+        adaInput = true;
+        if (isNaN(val) || val < k.min || val > k.max) {
+          card.classList.add('invalid');
+          input.classList.add('invalid');
+          errEl.textContent = `Nilai harus antara ${k.min} – ${k.max}`;
+        } else {
+          card.classList.remove('invalid');
+          input.classList.remove('invalid');
+          errEl.textContent = '';
+          total += val;
+        }
+      }
+    });
+
+    const box = $('edit-total-nilai-box');
+    box.classList.remove('total-mid', 'total-high');
+    if (!adaInput) {
+      $('edit-total-nilai-value').textContent = '—';
+    } else {
+      $('edit-total-nilai-value').textContent = total;
+      if (total >= 185) box.classList.add('total-high');
+      else if (total >= 170) box.classList.add('total-mid');
+    }
+  }
+
+  async function openEditNilai(nomorUrut, juri) {
+    // Ambil data nilai juri ini
+    try {
+      const res = await apiGet('getNilaiByPeserta', { nomorUrut });
+      if (!res.success || !res.data) {
+        showToast('Gagal mengambil data nilai', 'error');
+        return;
+      }
+      const nilaiData = res.data.find(d => d.juri === juri);
+      if (!nilaiData) {
+        showToast('Data nilai tidak ditemukan', 'error');
+        return;
+      }
+
+      editingNilaiData = nilaiData;
+      $('edit-nilai-id').value = nilaiData.idPenilaian;
+      $('edit-nilai-peserta').textContent = nilaiData.namaPeserta;
+      $('edit-nilai-nomor').textContent = nilaiData.nomorUrut;
+      $('edit-nilai-juri').textContent = nilaiData.juri;
+
+      // Isi nilai-nilai ke input
+      const fieldMap = ['orisinalitas', 'stamina', 'kekompakan', 'kreatifitas', 'teknikSerangBela', 'penghayatan'];
+      fieldMap.forEach((f, i) => {
+        const val = nilaiData[f];
+        $(`edit-nilai-${i}`).value = (val !== null && val !== undefined && val !== 0 && val !== '') ? val : '';
+        $(`edit-kriteria-card-${i}`).classList.remove('invalid');
+        $(`edit-nilai-${i}`).classList.remove('invalid');
+        $(`err-edit-nilai-${i}`).textContent = '';
+      });
+
+      hitungTotalNilaiEdit();
+      $('modal-edit-nilai').classList.remove('hidden');
+    } catch (err) {
+      showToast('Gagal menghubungi server', 'error');
+    }
+  }
+
+  function closeEditNilaiModal() {
+    $('modal-edit-nilai').classList.add('hidden');
+    editingNilaiData = null;
+  }
+
+  async function updateNilai() {
+    if (!editingNilaiData) return;
+
+    // Validasi nilai (opsional, tapi kalau diisi harus dalam range)
+    let allValid = true;
+    const nilaiArr = [];
+    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
+      const inputVal = $(`edit-nilai-${i}`).value;
+      if (inputVal === '') {
+        nilaiArr.push('');
+      } else {
+        const val = parseFloat(inputVal);
+        if (isNaN(val) || val < k.min || val > k.max) allValid = false;
+        nilaiArr.push(val);
+      }
+    });
+
+    if (!allValid) {
+      showToast('Periksa kembali input nilai (di luar range)', 'error');
+      return;
+    }
+
+    const totalNilai = nilaiArr.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
+
+    const payload = {
+      action: 'editNilai',
+      idPenilaian: editingNilaiData.idPenilaian,
+      orisinalitas: nilaiArr[0],
+      stamina: nilaiArr[1],
+      kekompakan: nilaiArr[2],
+      kreatifitas: nilaiArr[3],
+      teknikSerangBela: nilaiArr[4],
+      penghayatan: nilaiArr[5],
+      totalNilai
+    };
+
+    const btnUpdate = $('btn-update-nilai');
+    btnUpdate.disabled = true;
+    btnUpdate.querySelector('.btn-text').classList.add('hidden');
+    btnUpdate.querySelector('.btn-loading').classList.remove('hidden');
+
+    try {
+      const res = await apiPost(payload);
+      if (res.success) {
+        showToast('Nilai berhasil diperbarui', 'success');
+        closeEditNilaiModal();
+        loadRekap();
+      } else {
+        showToast(res.error || 'Gagal memperbarui nilai', 'error');
+      }
+    } catch {
+      showToast('Gagal menghubungi server', 'error');
+    }
+
+    btnUpdate.disabled = false;
+    btnUpdate.querySelector('.btn-text').classList.remove('hidden');
+    btnUpdate.querySelector('.btn-loading').classList.add('hidden');
+  }
+
+  async function hapusNilai(nomorUrut, juri) {
+    if (!confirm(`Hapus nilai ${juri} untuk peserta ${nomorUrut}?`)) return;
+
+    try {
+      const res = await apiPost({
+        action: 'deleteNilai',
+        nomorUrut,
+        juri
+      });
+      if (res.success) {
+        showToast('Nilai berhasil dihapus', 'success');
+        loadRekap();
+      } else {
+        showToast(res.error || 'Gagal menghapus nilai', 'error');
+      }
+    } catch {
+      showToast('Gagal menghubungi server', 'error');
+    }
+  }
+
+  // Expose ke window.App
+  window.App.editNilai = openEditNilai;
+  window.App.hapusNilai = hapusNilai;
 
   // Inisialisasi modul penilaian
   initPenilaian();
