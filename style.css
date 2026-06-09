@@ -969,6 +969,223 @@ body::before {
   color: #fff;
 }
 
+/* ============================================
+   Halaman Hasil — TV / Desktop View
+   ============================================ */
+
+.page-hasil {
+  background: linear-gradient(180deg, var(--krem) 0%, #f5ede0 100%);
+}
+
+.container-hasil {
+  max-width: 1400px;
+  width: 100%;
+  padding: 16px 20px;
+}
+
+.hasil-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, var(--hijau-tua), var(--hijau-sedang));
+  border-radius: var(--radius);
+  color: var(--putih-gading);
+  border: 2px solid var(--emas);
+  box-shadow: 0 4px 16px rgba(27, 67, 50, 0.2);
+}
+
+.hasil-header h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  color: var(--emas-terang);
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 6px;
+}
+
+.hasil-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.hasil-filters {
+  margin-bottom: 20px;
+}
+
+.hasil-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hasil-group {
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #e8e0d0;
+}
+
+.hasil-group-header {
+  background: linear-gradient(90deg, var(--hijau-tua), var(--hijau-sedang));
+  color: var(--putih-gading);
+  padding: 12px 18px;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 2px solid var(--emas);
+}
+
+.hasil-group-header .group-tag {
+  background: rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.hasil-group-header .group-tag b {
+  color: var(--emas-terang);
+  margin-left: 4px;
+}
+
+.tabel-hasil {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tabel-hasil thead {
+  background: var(--putih-gading);
+}
+
+.tabel-hasil th {
+  padding: 12px 10px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--hijau-tua);
+  border-bottom: 2px solid var(--emas-terang);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.tabel-hasil td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid #f0e8d8;
+  vertical-align: middle;
+}
+
+.tabel-hasil tbody tr.peringkat-emas td {
+  background: linear-gradient(90deg, rgba(255,215,0,0.22), rgba(255,215,0,0.08));
+  font-weight: 600;
+}
+
+.tabel-hasil tbody tr.peringkat-silver td {
+  background: linear-gradient(90deg, rgba(192,192,192,0.22), rgba(192,192,192,0.08));
+  font-weight: 600;
+}
+
+.tabel-hasil tbody tr.peringkat-perunggu td {
+  background: linear-gradient(90deg, rgba(205,127,50,0.20), rgba(205,127,50,0.06));
+  font-weight: 600;
+}
+
+.tabel-hasil .col-peringkat {
+  width: 140px;
+  font-weight: 700;
+}
+
+.tabel-hasil .col-nilai {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--hijau-tua);
+}
+
+.peringkat-emas .col-nilai { color: #b8860b; }
+.peringkat-silver .col-nilai { color: #707070; }
+.peringkat-perunggu .col-nilai { color: #8B4513; }
+
+.hasil-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 1rem;
+}
+
+/* TV / Desktop optimization */
+@media (min-width: 1024px) {
+  .container-hasil {
+    padding: 24px 32px;
+  }
+
+  .hasil-header h2 {
+    font-size: 2.2rem;
+  }
+
+  .hasil-subtitle {
+    font-size: 1.05rem;
+  }
+
+  .hasil-filters select,
+  .hasil-filters .btn-cari {
+    font-size: 1rem;
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+
+  .hasil-group-header {
+    font-size: 1.4rem;
+    padding: 16px 24px;
+  }
+
+  .hasil-group-header .group-tag {
+    font-size: 1rem;
+    padding: 6px 14px;
+  }
+
+  .tabel-hasil {
+    font-size: 1.15rem;
+  }
+
+  .tabel-hasil th {
+    padding: 16px 12px;
+    font-size: 0.95rem;
+  }
+
+  .tabel-hasil td {
+    padding: 16px 12px;
+  }
+
+  .tabel-hasil .col-peringkat {
+    width: 200px;
+    font-size: 1.1rem;
+  }
+
+  .tabel-hasil .col-nilai {
+    font-size: 1.8rem;
+  }
+
+  .badge-peringkat {
+    font-size: 0.95rem;
+    padding: 4px 12px;
+    border-radius: 14px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container-hasil { max-width: 1600px; }
+  .hasil-header h2 { font-size: 2.6rem; }
+  .tabel-hasil { font-size: 1.3rem; }
+  .tabel-hasil .col-nilai { font-size: 2.1rem; }
+}
+
 /* Cell Juri yang sudah dinilai (clickable untuk edit/hapus) */
 .juri-cell {
   cursor: default;

@@ -12,7 +12,7 @@
   <!-- Header -->
   <header class="app-header">
     <h1>Pasanggiri Bojonegara</h1>
-    <p>Sistem Pendaftaran Peserta Pasanggiri Desa Bojonegara</p>
+    <p>Sistem Pendaftaran & Penilaian Peserta Pasanggiri Desa Bojonegara</p>
   </header>
 
   <!-- Main Content -->
@@ -252,9 +252,31 @@
 
       </div>
     </section>
-  </main>
 
-  <!-- Modal Edit -->
+    <!-- Hasil Penilaian (Publik) -->
+    <section id="page-hasil" class="page page-hasil">
+      <div class="container container-hasil">
+        <div class="hasil-header">
+          <h2>🏆 Hasil Penilaian Pasanggiri Bojonegara</h2>
+          <p class="hasil-subtitle">Peringkat berdasarkan Nilai Akhir per Kategori &amp; Golongan</p>
+        </div>
+
+        <div class="rekap-filters hasil-filters">
+          <select id="filter-hasil-kategori" aria-label="Filter Kategori">
+            <option value="">Semua Kategori</option>
+          </select>
+          <select id="filter-hasil-golongan" aria-label="Filter Golongan">
+            <option value="">Semua Golongan</option>
+          </select>
+          <button type="button" class="btn btn-cari" id="btn-refresh-hasil">🔄 Refresh</button>
+        </div>
+
+        <div id="hasil-content" class="hasil-content">
+          <div class="loading-cell">Klik Refresh untuk memuat data</div>
+        </div>
+      </div>
+    </section>
+  </main>  <!-- Modal Edit -->
   <div id="modal-edit" class="modal hidden">
     <div class="modal-overlay"></div>
     <div class="modal-content">
@@ -336,12 +358,16 @@
       <span class="nav-label">Pendaftaran</span>
     </button>
     <button class="nav-btn" data-page="page-dashboard">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">Dashboard</span>
+      <span class="nav-icon">🥋</span>
+      <span class="nav-label">Peserta</span>
     </button>
     <button class="nav-btn" data-page="page-penilaian">
-      <span class="nav-icon">⭐</span>
+      <span class="nav-icon">👨🏼‍🏫</span>
       <span class="nav-label">Penilaian</span>
+    </button>
+    <button class="nav-btn" data-page="page-hasil">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Hasil</span>
     </button>
   </nav>
 

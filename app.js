@@ -84,6 +84,8 @@
         if (target === 'page-dashboard') loadDashboard();
         // Load cache peserta saat buka penilaian (untuk autocomplete)
         if (target === 'page-penilaian') loadPesertaCache();
+        // Auto-load data saat buka halaman Hasil (publik)
+        if (target === 'page-hasil') loadHasil();
       });
     });
   }
@@ -1125,6 +1127,134 @@
   // Expose ke window.App
   window.App.editNilai = openEditNilai;
   window.App.hapusNilai = hapusNilai;
+
+  // ============================================
+  // HALAMAN HASIL (PUBLIK / TV) — view-only
+  // ============================================
+
+  let hasilData = [];
+
+  function initHasil() {
+    populateHasilDropdowns();
+    setupHasilFilters();
+  }
+
+  function populateHasilDropdowns() {
+    const filterKategori = $('filter-hasil-kategori');
+    const filterGolongan = $('filter-hasil-golongan');
+    CONFIG.KATEGORI.forEach(k => filterKategori.add(new Option(k.nama, k.nama)));
+    CONFIG.GOLONGAN.forEach(g => filterGolongan.add(new Option(g.nama, g.nama)));
+  }
+
+  function setupHasilFilters() {
+    $('btn-refresh-hasil').addEventListener('click', loadHasil);
+    $('filter-hasil-kategori').addEventListener('change', renderHasil);
+    $('filter-hasil-golongan').addEventListener('change', renderHasil);
+  }
+
+  async function loadHasil() {
+    const content = $('hasil-content');
+    content.innerHTML = '<div class="loading-cell">Memuat data...</div>';
+    try {
+      const res = await apiGet('getRekap');
+      if (res.success) {
+        hasilData = res.data || [];
+        renderHasil();
+      } else {
+        content.innerHTML = '<div class="hasil-empty">Gagal memuat data</div>';
+      }
+    } catch {
+      content.innerHTML = '<div class="hasil-empty">Gagal menghubungi server</div>';
+    }
+  }
+
+  function renderHasil() {
+    const content = $('hasil-content');
+    const katFilter = $('filter-hasil-kategori').value;
+    const golFilter = $('filter-hasil-golongan').value;
+
+    // Filter & hanya peserta yang sudah ada Nilai Akhir
+    let data = hasilData.filter(d => d.rataRata > 0);
+    if (katFilter) data = data.filter(d => d.kategori === katFilter);
+    if (golFilter) data = data.filter(d => d.golongan === golFilter);
+
+    if (!data.length) {
+      content.innerHTML = '<div class="hasil-empty">Belum ada data hasil penilaian</div>';
+      return;
+    }
+
+    // Group by Kategori + Golongan
+    const groups = {};
+    data.forEach(d => {
+      const key = d.kategori + '||' + d.golongan;
+      if (!groups[key]) groups[key] = { kategori: d.kategori, golongan: d.golongan, items: [] };
+      groups[key].items.push(d);
+    });
+
+    // Urutkan grup berdasarkan kategori, lalu golongan
+    const sortedGroupKeys = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+
+    const html = sortedGroupKeys.map(key => {
+      const g = groups[key];
+      // Sort items berdasarkan nilai akhir desc
+      const sorted = g.items.slice().sort((a, b) => b.rataRata - a.rataRata);
+
+      const rows = sorted.map((d, idx) => {
+        const peringkat = idx + 1;
+        let rowClass = '';
+        let peringkatHtml = `<span>${peringkat}</span>`;
+        if (peringkat === 1) {
+          rowClass = 'peringkat-emas';
+          peringkatHtml = '<span class="badge-peringkat badge-emas">🥇 Emas</span>';
+        } else if (peringkat === 2) {
+          rowClass = 'peringkat-silver';
+          peringkatHtml = '<span class="badge-peringkat badge-silver">🥈 Silver</span>';
+        } else if (peringkat === 3) {
+          rowClass = 'peringkat-perunggu';
+          peringkatHtml = '<span class="badge-peringkat badge-perunggu">🥉 Perunggu</span>';
+        }
+
+        return `
+          <tr class="${rowClass}">
+            <td class="col-peringkat">${peringkatHtml}</td>
+            <td>${d.nomorUrut}</td>
+            <td>${d.namaPeserta}</td>
+            <td>${d.kontingen}</td>
+            <td class="col-nilai">${d.rataRata}</td>
+            <td>${d.jumlahJuri}/5</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <div class="hasil-group">
+          <div class="hasil-group-header">
+            <span class="group-tag">Kategori:<b>${g.kategori}</b></span>
+            <span class="group-tag">Golongan:<b>${g.golongan}</b></span>
+            <span class="group-tag">Peserta:<b>${sorted.length}</b></span>
+          </div>
+          <table class="tabel-hasil">
+            <thead>
+              <tr>
+                <th class="col-peringkat">Peringkat</th>
+                <th>No. Urut</th>
+                <th>Nama Peserta</th>
+                <th>Kontingen</th>
+                <th class="col-nilai">Nilai Akhir</th>
+                <th>Juri</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }).join('');
+
+    content.innerHTML = html;
+  }
+
+  // Inisialisasi modul hasil (publik)
+  initHasil();
 
   // Inisialisasi modul penilaian
   initPenilaian();
