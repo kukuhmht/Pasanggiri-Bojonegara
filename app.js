@@ -671,9 +671,9 @@
       totalNilaiValue.textContent = total;
     } else {
       totalNilaiValue.textContent = total;
-      // Warna berdasarkan total
-      if (total >= 185) totalNilaiBox.classList.add('total-high');
-      else if (total >= 170) totalNilaiBox.classList.add('total-mid');
+      // Warna berdasarkan total (max 250, min 173)
+      if (total >= 230) totalNilaiBox.classList.add('total-high');
+      else if (total >= 210) totalNilaiBox.classList.add('total-mid');
     }
   }
 
@@ -754,11 +754,13 @@
       juri,
       waktu,
       orisinalitas: nilaiArr[0],
-      stamina: nilaiArr[1],
-      kekompakan: nilaiArr[2],
-      kreatifitas: nilaiArr[3],
-      teknikSerangBela: nilaiArr[4],
-      penghayatan: nilaiArr[5],
+      kemantapan: nilaiArr[1],
+      stamina: nilaiArr[2],
+      kekompakan: nilaiArr[3],
+      kreatifitas: nilaiArr[4],
+      kekayaanTeknik: nilaiArr[5],
+      teknikSerangBela: nilaiArr[6],
+      penghayatan: nilaiArr[7],
       totalNilai
     };
 
@@ -969,8 +971,8 @@
       $('edit-total-nilai-value').textContent = '—';
     } else {
       $('edit-total-nilai-value').textContent = total;
-      if (total >= 185) box.classList.add('total-high');
-      else if (total >= 170) box.classList.add('total-mid');
+      if (total >= 230) box.classList.add('total-high');
+      else if (total >= 210) box.classList.add('total-mid');
     }
   }
 
@@ -995,7 +997,7 @@
       $('edit-nilai-juri').textContent = nilaiData.juri;
 
       // Isi nilai-nilai ke input
-      const fieldMap = ['orisinalitas', 'stamina', 'kekompakan', 'kreatifitas', 'teknikSerangBela', 'penghayatan'];
+      const fieldMap = ['orisinalitas', 'kemantapan', 'stamina', 'kekompakan', 'kreatifitas', 'kekayaanTeknik', 'teknikSerangBela', 'penghayatan'];
       fieldMap.forEach((f, i) => {
         const val = nilaiData[f];
         $(`edit-nilai-${i}`).value = (val !== null && val !== undefined && val !== 0 && val !== '') ? val : '';
@@ -1044,11 +1046,13 @@
       action: 'editNilai',
       idPenilaian: editingNilaiData.idPenilaian,
       orisinalitas: nilaiArr[0],
-      stamina: nilaiArr[1],
-      kekompakan: nilaiArr[2],
-      kreatifitas: nilaiArr[3],
-      teknikSerangBela: nilaiArr[4],
-      penghayatan: nilaiArr[5],
+      kemantapan: nilaiArr[1],
+      stamina: nilaiArr[2],
+      kekompakan: nilaiArr[3],
+      kreatifitas: nilaiArr[4],
+      kekayaanTeknik: nilaiArr[5],
+      teknikSerangBela: nilaiArr[6],
+      penghayatan: nilaiArr[7],
       totalNilai
     };
 

@@ -255,8 +255,10 @@ function getSheetPenilaian() {
     sheet = ss.insertSheet(SHEET_PENILAIAN);
     sheet.appendRow([
       'ID Penilaian', 'Nomor Urut Peserta', 'Kategori', 'Golongan', 'Kontingen',
-      'Nama Peserta', 'Juri', 'Waktu', 'Orisinalitas', 'Stamina', 'Kekompakan',
-      'Kreatifitas', 'Teknik Serang Bela', 'Penghayatan', 'Total Nilai', 'Timestamp'
+      'Nama Peserta', 'Juri', 'Waktu',
+      'Orisinalitas', 'Kemantapan', 'Stamina', 'Kekompakan',
+      'Kreatifitas', 'Kekayaan Teknik', 'Teknik Serang Bela', 'Penghayatan',
+      'Total Nilai', 'Timestamp'
     ]);
   }
   return sheet;
@@ -267,7 +269,7 @@ function getAllNilai() {
   const sheet = getSheetPenilaian();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
-  const data = sheet.getRange(2, 1, lastRow - 1, 16).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, 18).getValues();
   var result = [];
   for (var i = 0; i < data.length; i++) {
     var row = data[i];
@@ -283,13 +285,15 @@ function getAllNilai() {
       juri: String(row[6]),
       waktu: String(row[7]),
       orisinalitas: Number(row[8]) || 0,
-      stamina: Number(row[9]) || 0,
-      kekompakan: Number(row[10]) || 0,
-      kreatifitas: Number(row[11]) || 0,
-      teknikSerangBela: Number(row[12]) || 0,
-      penghayatan: Number(row[13]) || 0,
-      totalNilai: Number(row[14]) || 0,
-      timestamp: String(row[15])
+      kemantapan: Number(row[9]) || 0,
+      stamina: Number(row[10]) || 0,
+      kekompakan: Number(row[11]) || 0,
+      kreatifitas: Number(row[12]) || 0,
+      kekayaanTeknik: Number(row[13]) || 0,
+      teknikSerangBela: Number(row[14]) || 0,
+      penghayatan: Number(row[15]) || 0,
+      totalNilai: Number(row[16]) || 0,
+      timestamp: String(row[17])
     });
   }
   return result;
@@ -332,9 +336,11 @@ function handleAddNilai(body) {
       body.juri,
       body.waktu,
       body.orisinalitas,
+      body.kemantapan,
       body.stamina,
       body.kekompakan,
       body.kreatifitas,
+      body.kekayaanTeknik,
       body.teknikSerangBela,
       body.penghayatan,
       body.totalNilai,
@@ -361,14 +367,19 @@ function handleEditNilai(body) {
     if (String(ids[i][0]) === body.idPenilaian) {
       const rowIndex = i + 2;
       // Update nilai-nilai (kosong = '' = tidak dinilai)
+      // Kolom: I=9 Orisinalitas, J=10 Kemantapan, K=11 Stamina, L=12 Kekompakan,
+      //        M=13 Kreatifitas, N=14 Kekayaan Teknik, O=15 Teknik Serang Bela, P=16 Penghayatan
+      //        Q=17 Total Nilai, R=18 Timestamp
       sheet.getRange(rowIndex, 9).setValue(body.orisinalitas !== undefined ? body.orisinalitas : '');
-      sheet.getRange(rowIndex, 10).setValue(body.stamina !== undefined ? body.stamina : '');
-      sheet.getRange(rowIndex, 11).setValue(body.kekompakan !== undefined ? body.kekompakan : '');
-      sheet.getRange(rowIndex, 12).setValue(body.kreatifitas !== undefined ? body.kreatifitas : '');
-      sheet.getRange(rowIndex, 13).setValue(body.teknikSerangBela !== undefined ? body.teknikSerangBela : '');
-      sheet.getRange(rowIndex, 14).setValue(body.penghayatan !== undefined ? body.penghayatan : '');
-      sheet.getRange(rowIndex, 15).setValue(body.totalNilai);
-      sheet.getRange(rowIndex, 16).setValue(new Date().toISOString());
+      sheet.getRange(rowIndex, 10).setValue(body.kemantapan !== undefined ? body.kemantapan : '');
+      sheet.getRange(rowIndex, 11).setValue(body.stamina !== undefined ? body.stamina : '');
+      sheet.getRange(rowIndex, 12).setValue(body.kekompakan !== undefined ? body.kekompakan : '');
+      sheet.getRange(rowIndex, 13).setValue(body.kreatifitas !== undefined ? body.kreatifitas : '');
+      sheet.getRange(rowIndex, 14).setValue(body.kekayaanTeknik !== undefined ? body.kekayaanTeknik : '');
+      sheet.getRange(rowIndex, 15).setValue(body.teknikSerangBela !== undefined ? body.teknikSerangBela : '');
+      sheet.getRange(rowIndex, 16).setValue(body.penghayatan !== undefined ? body.penghayatan : '');
+      sheet.getRange(rowIndex, 17).setValue(body.totalNilai);
+      sheet.getRange(rowIndex, 18).setValue(new Date().toISOString());
       return jsonResponse({ success: true, message: 'Nilai berhasil diperbarui' });
     }
   }

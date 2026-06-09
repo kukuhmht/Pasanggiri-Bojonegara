@@ -40,10 +40,12 @@ const CONFIG = {
 
   // Kriteria Penilaian Juri
   KRITERIA_PENILAIAN: [
-    { nama: 'ORISINALITAS', min: 39, max: 50 },
+    { nama: 'ORISINALITAS', min: 14, max: 50 },
+    { nama: 'KEMANTAPAN', min: 20, max: 25 },
     { nama: 'STAMINA', min: 20, max: 25 },
     { nama: 'KEKOMPAKAN', min: 14, max: 25 },
     { nama: 'KREATIFITAS', min: 20, max: 25 },
+    { nama: 'KEKAYAAN TEKNIK', min: 20, max: 25 },
     { nama: 'TEKNIK SERANG BELA', min: 45, max: 50 },
     { nama: 'PENGHAYATAN', min: 20, max: 25 }
   ],
