@@ -864,18 +864,41 @@
       return;
     }
 
-    // Cari rata-rata tertinggi per golongan
-    const topByGolongan = {};
+    // Tentukan peringkat 1-3 per kombinasi Kategori + Golongan
+    // Hanya peserta dengan rataRata > 0 yang bisa dapat peringkat
+    const groups = {};
     filtered.forEach(d => {
-      if (d.rataRata > 0) {
-        if (!topByGolongan[d.golongan] || d.rataRata > topByGolongan[d.golongan]) {
-          topByGolongan[d.golongan] = d.rataRata;
-        }
-      }
+      if (d.rataRata <= 0) return;
+      const key = d.kategori + '|' + d.golongan;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(d);
     });
 
+    // Map nomorUrut → peringkat (1, 2, atau 3)
+    const peringkatMap = {};
+    Object.keys(groups).forEach(key => {
+      const sorted = groups[key].slice().sort((a, b) => b.rataRata - a.rataRata);
+      sorted.forEach((item, idx) => {
+        if (idx < 3) peringkatMap[item.nomorUrut] = idx + 1;
+      });
+    });
+
+    // Helper render badge & class
+    const peringkatBadge = (rank) => {
+      if (rank === 1) return '<span class="badge-peringkat badge-emas">🥇 Emas</span>';
+      if (rank === 2) return '<span class="badge-peringkat badge-silver">🥈 Silver</span>';
+      if (rank === 3) return '<span class="badge-peringkat badge-perunggu">🥉 Perunggu</span>';
+      return '';
+    };
+    const peringkatClass = (rank) => {
+      if (rank === 1) return 'highlight-emas';
+      if (rank === 2) return 'highlight-silver';
+      if (rank === 3) return 'highlight-perunggu';
+      return '';
+    };
+
     tbodyRekap.innerHTML = filtered.map(d => {
-      const isTop = d.rataRata > 0 && d.rataRata === topByGolongan[d.golongan];
+      const peringkat = peringkatMap[d.nomorUrut];
       const adaCukupJuri = d.jumlahJuri >= 3;
       // Render cell juri dengan tombol edit/hapus jika sudah ada nilai
       const juriCell = (juriNum) => {
@@ -893,7 +916,7 @@
       };
 
       return `
-        <tr class="${isTop ? 'highlight-top' : ''}">
+        <tr class="${peringkatClass(peringkat)}">
           <td>${d.nomorUrut}</td>
           <td>${d.namaPeserta}</td>
           <td>${d.kontingen}</td>
@@ -906,7 +929,7 @@
           ${juriCell(5)}
           <td>${adaCukupJuri && d.nilaiTertinggi ? d.nilaiTertinggi : '-'}</td>
           <td>${adaCukupJuri && d.nilaiTerendah ? d.nilaiTerendah : '-'}</td>
-          <td>${d.rataRata > 0 ? d.rataRata : '-'}${isTop ? '<span class="badge-tertinggi">🥇 Tertinggi</span>' : ''}</td>
+          <td>${d.rataRata > 0 ? d.rataRata : '-'}${peringkatBadge(peringkat)}</td>
           <td>${d.jumlahJuri}/5</td>
         </tr>
       `;
