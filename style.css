@@ -1018,6 +1018,110 @@ body::before {
   gap: 24px;
 }
 
+/* Juara Umum */
+.juara-umum-section {
+  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%);
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 2px solid var(--emas);
+  box-shadow: 0 6px 20px rgba(184,134,11,0.25);
+  color: var(--putih-gading);
+}
+
+.juara-umum-header {
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px dashed rgba(255,215,0,0.4);
+}
+
+.juara-umum-header h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--emas-terang);
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.juara-umum-sub {
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.tabel-juara-umum {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-size: 0.95rem;
+}
+
+.tabel-juara-umum thead {
+  background: rgba(0,0,0,0.25);
+}
+
+.tabel-juara-umum th {
+  padding: 10px 8px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--emas-terang);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--emas);
+}
+
+.tabel-juara-umum td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.tabel-juara-umum .ju-pos { width: 70px; }
+.tabel-juara-umum .ju-medal { width: 90px; font-weight: 600; }
+.tabel-juara-umum .ju-total,
+.tabel-juara-umum .ju-poin { width: 80px; font-weight: 600; }
+.tabel-juara-umum .ju-kontingen {
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.tabel-juara-umum .ju-pos-num {
+  display: inline-block;
+  min-width: 28px;
+  height: 28px;
+  line-height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  font-weight: 700;
+}
+.tabel-juara-umum .ju-crown { font-size: 1.6rem; }
+
+.tabel-juara-umum tbody tr.ju-emas td {
+  background: linear-gradient(90deg, rgba(255,215,0,0.25), rgba(255,215,0,0.08));
+  font-weight: 700;
+}
+.tabel-juara-umum tbody tr.ju-silver td {
+  background: linear-gradient(90deg, rgba(192,192,192,0.22), rgba(192,192,192,0.06));
+}
+.tabel-juara-umum tbody tr.ju-perunggu td {
+  background: linear-gradient(90deg, rgba(205,127,50,0.18), rgba(205,127,50,0.04));
+}
+.tabel-juara-umum tbody tr.ju-emas .ju-poin,
+.tabel-juara-umum tbody tr.ju-emas .ju-total {
+  color: var(--emas-terang);
+  font-size: 1.15rem;
+}
+
+.juara-umum-keterangan {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  opacity: 0.7;
+  text-align: center;
+  font-style: italic;
+}
+
 .hasil-group {
   background: #fff;
   border-radius: var(--radius);
@@ -1176,6 +1280,37 @@ body::before {
     font-size: 0.95rem;
     padding: 4px 12px;
     border-radius: 14px;
+  }
+
+  /* Juara Umum — TV size */
+  .juara-umum-section {
+    padding: 28px 32px;
+  }
+  .juara-umum-header h3 {
+    font-size: 2rem;
+  }
+  .juara-umum-sub {
+    font-size: 1rem;
+  }
+  .tabel-juara-umum {
+    font-size: 1.2rem;
+  }
+  .tabel-juara-umum th {
+    padding: 14px 10px;
+    font-size: 0.95rem;
+  }
+  .tabel-juara-umum td {
+    padding: 16px 10px;
+  }
+  .tabel-juara-umum .ju-kontingen {
+    font-size: 1.4rem;
+  }
+  .tabel-juara-umum .ju-crown {
+    font-size: 2.2rem;
+  }
+  .tabel-juara-umum tbody tr.ju-emas .ju-poin,
+  .tabel-juara-umum tbody tr.ju-emas .ju-total {
+    font-size: 1.6rem;
   }
 }
 

@@ -1191,6 +1191,9 @@
       groups[key].items.push(d);
     });
 
+    // Hitung Juara Umum berdasarkan kontingen
+    const juaraUmumHtml = renderJuaraUmum(groups);
+
     // Urutkan grup berdasarkan kategori, lalu golongan
     const sortedGroupKeys = Object.keys(groups).sort((a, b) => a.localeCompare(b));
 
@@ -1250,7 +1253,89 @@
       `;
     }).join('');
 
-    content.innerHTML = html;
+    content.innerHTML = juaraUmumHtml + html;
+  }
+
+  // Hitung & render Juara Umum berdasarkan medali kontingen
+  function renderJuaraUmum(groups) {
+    // Akumulasi medali per kontingen dari peringkat top 3 setiap grup
+    const kontingenStats = {};
+    Object.keys(groups).forEach(key => {
+      const g = groups[key];
+      const sorted = g.items.slice().sort((a, b) => b.rataRata - a.rataRata);
+      sorted.forEach((item, idx) => {
+        if (idx > 2) return; // hanya top 3 yang dapat medali
+        const kontingen = item.kontingen;
+        if (!kontingenStats[kontingen]) {
+          kontingenStats[kontingen] = { kontingen, emas: 0, silver: 0, perunggu: 0, total: 0, poin: 0 };
+        }
+        const s = kontingenStats[kontingen];
+        if (idx === 0) { s.emas++; s.poin += 3; }
+        else if (idx === 1) { s.silver++; s.poin += 2; }
+        else if (idx === 2) { s.perunggu++; s.poin += 1; }
+        s.total = s.emas + s.silver + s.perunggu;
+      });
+    });
+
+    const stats = Object.values(kontingenStats);
+    if (!stats.length) return '';
+
+    // Sort: emas desc → silver desc → perunggu desc → nama asc
+    stats.sort((a, b) => {
+      if (b.emas !== a.emas) return b.emas - a.emas;
+      if (b.silver !== a.silver) return b.silver - a.silver;
+      if (b.perunggu !== a.perunggu) return b.perunggu - a.perunggu;
+      return a.kontingen.localeCompare(b.kontingen);
+    });
+
+    const rows = stats.map((s, idx) => {
+      const pos = idx + 1;
+      let rowClass = '';
+      let posLabel = `<span class="ju-pos-num">${pos}</span>`;
+      if (pos === 1) {
+        rowClass = 'ju-emas';
+        posLabel = '<span class="ju-crown">👑</span>';
+      } else if (pos === 2) {
+        rowClass = 'ju-silver';
+      } else if (pos === 3) {
+        rowClass = 'ju-perunggu';
+      }
+      return `
+        <tr class="${rowClass}">
+          <td class="ju-pos">${posLabel}</td>
+          <td class="ju-kontingen">${s.kontingen}</td>
+          <td class="ju-medal">${s.emas}</td>
+          <td class="ju-medal">${s.silver}</td>
+          <td class="ju-medal">${s.perunggu}</td>
+          <td class="ju-total">${s.total}</td>
+          <td class="ju-poin">${s.poin}</td>
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      <div class="juara-umum-section">
+        <div class="juara-umum-header">
+          <h3>👑 Juara Umum</h3>
+          <p class="juara-umum-sub">Peringkat Kontingen berdasarkan perolehan medali</p>
+        </div>
+        <table class="tabel-juara-umum">
+          <thead>
+            <tr>
+              <th class="ju-pos">Pos</th>
+              <th>Kontingen</th>
+              <th class="ju-medal">🥇 Emas</th>
+              <th class="ju-medal">🥈 Silver</th>
+              <th class="ju-medal">🥉 Perunggu</th>
+              <th class="ju-total">Total</th>
+              <th class="ju-poin">Poin</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="juara-umum-keterangan">Poin: Emas ×3 · Silver ×2 · Perunggu ×1 · Tiebreaker: Emas → Silver → Perunggu</div>
+      </div>
+    `;
   }
 
   // Inisialisasi modul hasil (publik)
