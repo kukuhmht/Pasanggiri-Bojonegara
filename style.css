@@ -243,6 +243,17 @@ body::before {
   background: #fff;
 }
 
+.filter-bar-multi {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-bar-multi select {
+  flex: 1;
+  min-width: 120px;
+}
+
 /* Summary Cards */
 .summary-cards {
   display: grid;

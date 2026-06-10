@@ -7,7 +7,6 @@
 
   // === State ===
   let pesertaData = [];
-  let currentFilter = '';
 
   // === DOM Elements ===
   const $ = id => document.getElementById(id);
@@ -41,10 +40,12 @@
     CONFIG.KATEGORI.forEach(k => {
       kategoriSel.add(new Option(k.nama, k.nama));
       $('edit-kategori').add(new Option(k.nama, k.nama));
+      $('filter-kategori-dashboard').add(new Option(k.nama, k.nama));
     });
     CONFIG.GOLONGAN.forEach(g => {
       golonganSel.add(new Option(g.nama, g.nama));
       $('edit-golongan').add(new Option(g.nama, g.nama));
+      $('filter-golongan-dashboard').add(new Option(g.nama, g.nama));
     });
     CONFIG.KONTINGEN.forEach(k => {
       kontingenSel.add(new Option(k.nama, k.nama));
@@ -229,13 +230,20 @@
   }
 
   // Filter listener
-  filterKontingen.addEventListener('change', () => {
-    currentFilter = filterKontingen.value;
-    renderDashboard();
-  });
+  filterKontingen.addEventListener('change', renderDashboard);
+  $('filter-kategori-dashboard').addEventListener('change', renderDashboard);
+  $('filter-golongan-dashboard').addEventListener('change', renderDashboard);
 
   function renderDashboard() {
-    const filtered = currentFilter ? pesertaData.filter(d => d.kontingen === currentFilter) : pesertaData;
+    const filterKat = $('filter-kategori-dashboard').value;
+    const filterGol = $('filter-golongan-dashboard').value;
+    const filterKont = filterKontingen.value;
+
+    let filtered = pesertaData;
+    if (filterKat) filtered = filtered.filter(d => d.kategori === filterKat);
+    if (filterGol) filtered = filtered.filter(d => d.golongan === filterGol);
+    if (filterKont) filtered = filtered.filter(d => d.kontingen === filterKont);
+
     renderSummary(filtered);
     renderTable(filtered);
   }
