@@ -571,7 +571,8 @@
     $('info-kontingen').textContent = data.kontingen;
     $('input-nama-peserta').value = data.namaPeserta;
     // Waktu tampil dikosongkan, diinput manual oleh juri
-    $('input-waktu-tampil').value = '';
+    $('input-waktu-menit').value = '';
+    $('input-waktu-detik').value = '';
     // Bangun input nilai sesuai kategori peserta
     buildKriteriaInputs(data.kategori);
     dataPesertaFound.classList.remove('hidden');
@@ -705,31 +706,35 @@
     }
   }
 
-  // Konversi string mm:ss menjadi total detik (atau null jika format salah)
-  function waktuKeDetik(str) {
-    const m = String(str).trim().match(/^(\d{1,2}):([0-5]?\d)$/);
-    if (!m) return null;
-    const menit = parseInt(m[1], 10);
-    const detik = parseInt(m[2], 10);
+  // Konversi 2 input menit + detik menjadi total detik (atau null jika format salah)
+  function getWaktuDetik() {
+    const menit = parseInt($('input-waktu-menit').value, 10);
+    const detik = parseInt($('input-waktu-detik').value, 10);
+    if (isNaN(menit) || isNaN(detik)) return null;
+    if (menit < 0 || detik < 0 || detik > 59) return null;
     return menit * 60 + detik;
+  }
+
+  // Konversi ke string mm:ss untuk disimpan ke sheet
+  function getWaktuString() {
+    const m = $('input-waktu-menit').value.trim();
+    const s = $('input-waktu-detik').value.trim();
+    if (m === '' || s === '') return '';
+    const mPad = m.padStart(2, '0');
+    const sPad = s.padStart(2, '0');
+    return `${mPad}:${sPad}`;
   }
 
   // Cek apakah waktu tampil melebihi batas, lalu set KEMANTAPAN otomatis
   function cekWaktuTampil() {
-    const waktuStr = $('input-waktu-tampil').value.trim();
-    const detik = waktuKeDetik(waktuStr);
+    const detik = getWaktuDetik();
     const inputKemantapan = $('nilai-kemantapan');
     const errWaktu = $('err-waktu-tampil');
 
     // Reset notifikasi
     errWaktu.textContent = '';
 
-    if (waktuStr === '') return;
-
-    if (detik === null) {
-      errWaktu.textContent = 'Format waktu harus mm:ss (contoh 03:05).';
-      return;
-    }
+    if (detik === null) return;
 
     // Jika melebihi batas → KEMANTAPAN otomatis nilai default
     if (detik > CONFIG.WAKTU_TAMPIL_BATAS_DETIK && inputKemantapan) {
@@ -760,9 +765,11 @@
   function setupNilaiActions() {
     btnSimpanNilai.addEventListener('click', simpanNilai);
     btnResetNilai.addEventListener('click', resetNilaiInputs);
-    // Listener waktu tampil (format mm:ss + auto KEMANTAPAN)
-    $('input-waktu-tampil').addEventListener('input', cekWaktuTampil);
-    $('input-waktu-tampil').addEventListener('blur', cekWaktuTampil);
+    // Listener waktu tampil (2 input: menit + detik)
+    $('input-waktu-menit').addEventListener('input', cekWaktuTampil);
+    $('input-waktu-detik').addEventListener('input', cekWaktuTampil);
+    $('input-waktu-menit').addEventListener('blur', cekWaktuTampil);
+    $('input-waktu-detik').addEventListener('blur', cekWaktuTampil);
   }
 
   async function simpanNilai() {
@@ -786,16 +793,16 @@
       return;
     }
 
-    // Validasi waktu tampil (format mm:ss)
-    const waktu = $('input-waktu-tampil').value.trim();
+    // Validasi waktu tampil
+    const waktu = getWaktuString();
     if (!waktu) {
       $('err-waktu-tampil').textContent = 'Waktu tampil wajib diisi.';
       showToast('Waktu tampil wajib diisi', 'error');
       return;
     }
-    if (waktuKeDetik(waktu) === null) {
-      $('err-waktu-tampil').textContent = 'Format waktu harus mm:ss (contoh 03:05).';
-      showToast('Format waktu tampil salah', 'error');
+    if (getWaktuDetik() === null) {
+      $('err-waktu-tampil').textContent = 'Waktu tampil tidak valid.';
+      showToast('Waktu tampil tidak valid', 'error');
       return;
     }
     $('err-waktu-tampil').textContent = '';
@@ -912,7 +919,8 @@
     sectionNilai.classList.add('hidden');
     resetNilaiInputs();
     $('juri-badges').innerHTML = '';
-    $('input-waktu-tampil').value = '';
+    $('input-waktu-menit').value = '';
+    $('input-waktu-detik').value = '';
     $('err-waktu-tampil').textContent = '';
   }
 

@@ -849,6 +849,44 @@ body::before {
   font-weight: 600;
 }
 
+/* Waktu Tampil 2-input row */
+.waktu-tampil-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.waktu-tampil-row input[type="number"] {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  border: 1.5px solid #d4c9a8;
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--coklat);
+  -moz-appearance: textfield;
+}
+
+.waktu-tampil-row input[type="number"]::-webkit-outer-spin-button,
+.waktu-tampil-row input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.waktu-tampil-row input[type="number"]:focus {
+  outline: none;
+  border-color: var(--hijau-sedang);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+
+.waktu-separator {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--hijau-tua);
+}
+
 .kriteria-hint {
   font-size: 0.72rem;
   color: #999;
