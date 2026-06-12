@@ -424,6 +424,7 @@ function getRekapNilai() {
         kategori: n.kategori,
         golongan: n.golongan,
         kontingen: n.kontingen,
+        waktuTampil: '',
         juri1: null,
         juri2: null,
         juri3: null,
@@ -443,6 +444,10 @@ function getRekapNilai() {
     var juriNum = juriStr.replace('Juri ', '');
     p['juri' + juriNum] = n.totalNilai;
     p.jumlahJuri += 1;
+    // Simpan waktu tampil dari Juri 1
+    if (juriNum === '1') {
+      p.waktuTampil = String(n.waktu) || '';
+    }
   }
 
   // Hitung nilai akhir sesuai rumus: sum - max - min (jika juri >= 3)

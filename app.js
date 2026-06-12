@@ -944,7 +944,7 @@
 
   async function loadRekap() {
     const tbodyRekap = $('tbody-rekap');
-    tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Memuat data...</td></tr>';
+    tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Memuat data...</td></tr>';
 
     try {
       const res = await apiGet('getRekap');
@@ -952,10 +952,10 @@
         rekapData = res.data || [];
         renderRekap();
       } else {
-        tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Gagal memuat data</td></tr>';
+        tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Gagal memuat data</td></tr>';
       }
     } catch {
-      tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Gagal menghubungi server</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Gagal menghubungi server</td></tr>';
     }
   }
 
@@ -969,7 +969,7 @@
     if (katFilter) filtered = filtered.filter(d => d.kategori === katFilter);
 
     if (!filtered.length) {
-      tbodyRekap.innerHTML = '<tr><td colspan="14" class="loading-cell">Belum ada data penilaian</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Belum ada data penilaian</td></tr>';
       return;
     }
 
@@ -1031,6 +1031,7 @@
           <td>${d.kontingen}</td>
           <td>${d.kategori}</td>
           <td>${d.golongan}</td>
+          <td>${d.waktuTampil || '-'}</td>
           ${juriCell(1)}
           ${juriCell(2)}
           ${juriCell(3)}
