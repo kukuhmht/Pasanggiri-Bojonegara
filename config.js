@@ -52,7 +52,7 @@ const CONFIG = {
 
   // Kriteria yang ditampilkan per Kategori (pakai key dari KRITERIA_PENILAIAN)
   KRITERIA_PER_KATEGORI: {
-    'PERORANGAN': ['orisinalitas', 'kemantapan', 'kekayaanTeknik'],
+    'PERORANGAN': ['orisinalitas', 'kemantapan', 'stamina'],
     'BERPASANGAN': ['teknikSerangBela', 'kemantapan', 'penghayatan'],
     'BERKELOMPOK': ['orisinalitas', 'kemantapan', 'kekompakan'],
     'MASSAL': ['orisinalitas', 'kemantapan', 'kekompakan', 'kreatifitas'],
