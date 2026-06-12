@@ -944,7 +944,7 @@
 
   async function loadRekap() {
     const tbodyRekap = $('tbody-rekap');
-    tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Memuat data...</td></tr>';
+    tbodyRekap.innerHTML = '<tr><td colspan="16" class="loading-cell">Memuat data...</td></tr>';
 
     try {
       const res = await apiGet('getRekap');
@@ -952,10 +952,10 @@
         rekapData = res.data || [];
         renderRekap();
       } else {
-        tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Gagal memuat data</td></tr>';
+        tbodyRekap.innerHTML = '<tr><td colspan="16" class="loading-cell">Gagal memuat data</td></tr>';
       }
     } catch {
-      tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Gagal menghubungi server</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="16" class="loading-cell">Gagal menghubungi server</td></tr>';
     }
   }
 
@@ -969,7 +969,7 @@
     if (katFilter) filtered = filtered.filter(d => d.kategori === katFilter);
 
     if (!filtered.length) {
-      tbodyRekap.innerHTML = '<tr><td colspan="15" class="loading-cell">Belum ada data penilaian</td></tr>';
+      tbodyRekap.innerHTML = '<tr><td colspan="16" class="loading-cell">Belum ada data penilaian</td></tr>';
       return;
     }
 
@@ -1039,6 +1039,7 @@
           ${juriCell(5)}
           <td>${adaCukupJuri && d.nilaiTertinggi ? d.nilaiTertinggi : '-'}</td>
           <td>${adaCukupJuri && d.nilaiTerendah ? d.nilaiTerendah : '-'}</td>
+          <td>${d.nilaiOrisinalitas > 0 ? d.nilaiOrisinalitas : '-'}</td>
           <td>${d.rataRata > 0 ? d.rataRata : '-'}${peringkatBadge(peringkat)}</td>
           <td>${d.jumlahJuri}/5</td>
         </tr>

@@ -430,11 +430,17 @@ function getRekapNilai() {
         juri3: null,
         juri4: null,
         juri5: null,
+        orisJuri1: null,
+        orisJuri2: null,
+        orisJuri3: null,
+        orisJuri4: null,
+        orisJuri5: null,
         nilaiTertinggi: 0,
         nilaiTerendah: 0,
         totalSemua: 0,
         jumlahJuri: 0,
-        rataRata: 0
+        rataRata: 0,
+        nilaiOrisinalitas: 0
       };
     }
 
@@ -443,6 +449,8 @@ function getRekapNilai() {
     var juriStr = String(n.juri).trim();
     var juriNum = juriStr.replace('Juri ', '');
     p['juri' + juriNum] = n.totalNilai;
+    // Simpan orisinalitas per juri (untuk hitung trimmed sum)
+    p['orisJuri' + juriNum] = (n.orisinalitas !== '' && n.orisinalitas !== null && n.orisinalitas !== undefined) ? Number(n.orisinalitas) : null;
     p.jumlahJuri += 1;
     // Simpan waktu tampil dari Juri 1
     if (juriNum === '1') {
@@ -489,6 +497,32 @@ function getRekapNilai() {
       } else {
         // Belum cukup data untuk eliminasi, pakai sum semua
         item.rataRata = sumAll;
+      }
+    }
+
+    // Hitung Nilai Orisinalitas (rumus sama: sum - max - min jika juri >= 3)
+    var nilaiOris = [];
+    if (item.orisJuri1 !== null) nilaiOris.push(item.orisJuri1);
+    if (item.orisJuri2 !== null) nilaiOris.push(item.orisJuri2);
+    if (item.orisJuri3 !== null) nilaiOris.push(item.orisJuri3);
+    if (item.orisJuri4 !== null) nilaiOris.push(item.orisJuri4);
+    if (item.orisJuri5 !== null) nilaiOris.push(item.orisJuri5);
+
+    if (nilaiOris.length === 0) {
+      item.nilaiOrisinalitas = 0;
+    } else {
+      var sumOris = 0;
+      var maxOris = nilaiOris[0];
+      var minOris = nilaiOris[0];
+      for (var ko = 0; ko < nilaiOris.length; ko++) {
+        sumOris += nilaiOris[ko];
+        if (nilaiOris[ko] > maxOris) maxOris = nilaiOris[ko];
+        if (nilaiOris[ko] < minOris) minOris = nilaiOris[ko];
+      }
+      if (nilaiOris.length >= 3) {
+        item.nilaiOrisinalitas = sumOris - maxOris - minOris;
+      } else {
+        item.nilaiOrisinalitas = sumOris;
       }
     }
 
