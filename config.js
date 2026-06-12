@@ -38,17 +38,30 @@ const CONFIG = {
     { nama: 'ATT', kode: 'ATT', min: 6, max: 6 }
   ],
 
-  // Kriteria Penilaian Juri
+  // Kriteria Penilaian Juri (master list dengan key stabil)
   KRITERIA_PENILAIAN: [
-    { nama: 'ORISINALITAS', min: 14, max: 50 },
-    { nama: 'KEMANTAPAN', min: 20, max: 25 },
-    { nama: 'STAMINA', min: 20, max: 25 },
-    { nama: 'KEKOMPAKAN', min: 14, max: 25 },
-    { nama: 'KREATIFITAS', min: 20, max: 25 },
-    { nama: 'KEKAYAAN TEKNIK', min: 20, max: 25 },
-    { nama: 'TEKNIK SERANG BELA', min: 45, max: 50 },
-    { nama: 'PENGHAYATAN', min: 20, max: 25 }
+    { nama: 'ORISINALITAS', key: 'orisinalitas', min: 14, max: 50 },
+    { nama: 'KEMANTAPAN', key: 'kemantapan', min: 20, max: 25 },
+    { nama: 'STAMINA', key: 'stamina', min: 20, max: 25 },
+    { nama: 'KEKOMPAKAN', key: 'kekompakan', min: 14, max: 25 },
+    { nama: 'KREATIFITAS', key: 'kreatifitas', min: 20, max: 25 },
+    { nama: 'KEKAYAAN TEKNIK', key: 'kekayaanTeknik', min: 20, max: 25 },
+    { nama: 'TEKNIK SERANG BELA', key: 'teknikSerangBela', min: 45, max: 50 },
+    { nama: 'PENGHAYATAN', key: 'penghayatan', min: 20, max: 25 }
   ],
+
+  // Kriteria yang ditampilkan per Kategori (pakai key dari KRITERIA_PENILAIAN)
+  KRITERIA_PER_KATEGORI: {
+    'PERORANGAN': ['orisinalitas', 'kemantapan', 'kekayaanTeknik'],
+    'BERPASANGAN': ['teknikSerangBela', 'kemantapan', 'penghayatan'],
+    'BERKELOMPOK': ['orisinalitas', 'kemantapan', 'kekompakan'],
+    'MASSAL': ['orisinalitas', 'kemantapan', 'kekompakan', 'kreatifitas'],
+    'ATT': ['orisinalitas', 'kemantapan', 'kekayaanTeknik']
+  },
+
+  // Batas waktu tampil; jika melebihi, KEMANTAPAN otomatis jadi nilai default
+  WAKTU_TAMPIL_BATAS_DETIK: 190, // 3 menit 10 detik = 190 detik
+  KEMANTAPAN_DEFAULT_LEBIH_WAKTU: 20,
 
   // Daftar Juri
   JURI_LIST: ['Juri 1', 'Juri 2', 'Juri 3', 'Juri 4', 'Juri 5']

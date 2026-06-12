@@ -837,6 +837,18 @@ body::before {
   border-color: var(--merah-error);
 }
 
+.kriteria-card input[type="number"].auto-filled {
+  background: #f0f7f0;
+  border-color: var(--hijau-sedang);
+  color: var(--hijau-tua);
+  font-weight: 700;
+}
+
+.kriteria-hint.auto-note {
+  color: var(--hijau-sedang);
+  font-weight: 600;
+}
+
 .kriteria-hint {
   font-size: 0.72rem;
   color: #999;

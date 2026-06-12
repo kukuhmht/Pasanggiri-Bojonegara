@@ -412,7 +412,6 @@
     setupPenilaianTabs();
     setupCariPeserta();
     setupJuriSelect();
-    setupKriteriaInputs();
     setupNilaiActions();
     setupRekapFilters();
     setupEditNilaiModal();
@@ -573,6 +572,8 @@
     $('input-nama-peserta').value = data.namaPeserta;
     // Waktu tampil dikosongkan, diinput manual oleh juri
     $('input-waktu-tampil').value = '';
+    // Bangun input nilai sesuai kategori peserta
+    buildKriteriaInputs(data.kategori);
     dataPesertaFound.classList.remove('hidden');
     sectionJuri.classList.remove('hidden');
     sectionNilai.classList.remove('hidden');
@@ -607,32 +608,48 @@
     }).join('');
   }
 
-  // === Kriteria Inputs ===
-  function setupKriteriaInputs() {
-    kriteriaInputsDiv.innerHTML = CONFIG.KRITERIA_PENILAIAN.map((k, i) => `
-      <div class="kriteria-card" id="kriteria-card-${i}">
-        <div class="kriteria-name">${i + 1}. ${k.nama}</div>
-        <input type="number" id="nilai-${i}" min="${k.min}" max="${k.max}" placeholder="${k.min}" aria-label="${k.nama}">
+  // === Kriteria Inputs (Dinamis per Kategori) ===
+
+  // Helper: cari kriteria dari master list berdasarkan key
+  function getKriteriaByKey(key) {
+    return CONFIG.KRITERIA_PENILAIAN.find(k => k.key === key);
+  }
+
+  // Helper: ambil daftar kriteria aktif untuk kategori tertentu
+  function getActiveKriteria(kategori) {
+    const keys = CONFIG.KRITERIA_PER_KATEGORI[kategori];
+    if (!keys) return CONFIG.KRITERIA_PENILAIAN.slice(); // fallback: semua
+    return keys.map(getKriteriaByKey).filter(Boolean);
+  }
+
+  // Bangun input nilai sesuai kategori peserta
+  function buildKriteriaInputs(kategori) {
+    const kriteria = getActiveKriteria(kategori);
+    kriteriaInputsDiv.innerHTML = kriteria.map((k, idx) => `
+      <div class="kriteria-card" id="kriteria-card-${k.key}">
+        <div class="kriteria-name">${idx + 1}. ${k.nama}</div>
+        <input type="number" id="nilai-${k.key}" min="${k.min}" max="${k.max}" placeholder="${k.min}" aria-label="${k.nama}">
         <div class="kriteria-hint">(${k.min} – ${k.max})</div>
-        <div class="kriteria-error" id="err-nilai-${i}"></div>
+        <div class="kriteria-error" id="err-nilai-${k.key}"></div>
       </div>
     `).join('');
 
     // Event listener live untuk hitung total
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      const input = $(`nilai-${i}`);
+    kriteria.forEach(k => {
+      const input = $(`nilai-${k.key}`);
       input.addEventListener('input', () => {
-        validateNilaiInput(i);
+        validateNilaiInput(k.key);
         hitungTotalNilai();
       });
     });
   }
 
-  function validateNilaiInput(index) {
-    const k = CONFIG.KRITERIA_PENILAIAN[index];
-    const input = $(`nilai-${index}`);
-    const card = $(`kriteria-card-${index}`);
-    const errEl = $(`err-nilai-${index}`);
+  function validateNilaiInput(key) {
+    const k = getKriteriaByKey(key);
+    const input = $(`nilai-${key}`);
+    const card = $(`kriteria-card-${key}`);
+    const errEl = $(`err-nilai-${key}`);
+    if (!input) return true;
     const val = parseFloat(input.value);
 
     if (input.value === '') {
@@ -660,8 +677,10 @@
     let adaInput = false;
     let hasInvalid = false;
 
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      const input = $(`nilai-${i}`);
+    const kriteria = currentPeserta ? getActiveKriteria(currentPeserta.kategori) : [];
+    kriteria.forEach(k => {
+      const input = $(`nilai-${k.key}`);
+      if (!input) return;
       const val = parseFloat(input.value);
       if (input.value !== '') {
         adaInput = true;
@@ -681,9 +700,59 @@
       totalNilaiValue.textContent = total;
     } else {
       totalNilaiValue.textContent = total;
-      // Warna berdasarkan total (max 250, min 173)
       if (total >= 230) totalNilaiBox.classList.add('total-high');
       else if (total >= 210) totalNilaiBox.classList.add('total-mid');
+    }
+  }
+
+  // Konversi string mm:ss menjadi total detik (atau null jika format salah)
+  function waktuKeDetik(str) {
+    const m = String(str).trim().match(/^(\d{1,2}):([0-5]?\d)$/);
+    if (!m) return null;
+    const menit = parseInt(m[1], 10);
+    const detik = parseInt(m[2], 10);
+    return menit * 60 + detik;
+  }
+
+  // Cek apakah waktu tampil melebihi batas, lalu set KEMANTAPAN otomatis
+  function cekWaktuTampil() {
+    const waktuStr = $('input-waktu-tampil').value.trim();
+    const detik = waktuKeDetik(waktuStr);
+    const inputKemantapan = $('nilai-kemantapan');
+    const errWaktu = $('err-waktu-tampil');
+
+    // Reset notifikasi
+    errWaktu.textContent = '';
+
+    if (waktuStr === '') return;
+
+    if (detik === null) {
+      errWaktu.textContent = 'Format waktu harus mm:ss (contoh 03:05).';
+      return;
+    }
+
+    // Jika melebihi batas → KEMANTAPAN otomatis nilai default
+    if (detik > CONFIG.WAKTU_TAMPIL_BATAS_DETIK && inputKemantapan) {
+      inputKemantapan.value = CONFIG.KEMANTAPAN_DEFAULT_LEBIH_WAKTU;
+      inputKemantapan.readOnly = true;
+      inputKemantapan.classList.add('auto-filled');
+      validateNilaiInput('kemantapan');
+      hitungTotalNilai();
+      const card = $('kriteria-card-kemantapan');
+      if (card && !card.querySelector('.auto-note')) {
+        const note = document.createElement('div');
+        note.className = 'kriteria-hint auto-note';
+        note.textContent = `⏱️ Waktu > 3:10 → KEMANTAPAN otomatis ${CONFIG.KEMANTAPAN_DEFAULT_LEBIH_WAKTU}`;
+        card.appendChild(note);
+      }
+    } else if (inputKemantapan) {
+      // Waktu dalam batas → buka kembali input KEMANTAPAN
+      inputKemantapan.readOnly = false;
+      inputKemantapan.classList.remove('auto-filled');
+      const card = $('kriteria-card-kemantapan');
+      const note = card ? card.querySelector('.auto-note') : null;
+      if (note) note.remove();
+      hitungTotalNilai();
     }
   }
 
@@ -691,6 +760,9 @@
   function setupNilaiActions() {
     btnSimpanNilai.addEventListener('click', simpanNilai);
     btnResetNilai.addEventListener('click', resetNilaiInputs);
+    // Listener waktu tampil (format mm:ss + auto KEMANTAPAN)
+    $('input-waktu-tampil').addEventListener('input', cekWaktuTampil);
+    $('input-waktu-tampil').addEventListener('blur', cekWaktuTampil);
   }
 
   async function simpanNilai() {
@@ -714,19 +786,36 @@
       return;
     }
 
+    // Validasi waktu tampil (format mm:ss)
+    const waktu = $('input-waktu-tampil').value.trim();
+    if (!waktu) {
+      $('err-waktu-tampil').textContent = 'Waktu tampil wajib diisi.';
+      showToast('Waktu tampil wajib diisi', 'error');
+      return;
+    }
+    if (waktuKeDetik(waktu) === null) {
+      $('err-waktu-tampil').textContent = 'Format waktu harus mm:ss (contoh 03:05).';
+      showToast('Format waktu tampil salah', 'error');
+      return;
+    }
+    $('err-waktu-tampil').textContent = '';
+
     // Validasi nilai: tidak wajib diisi, tapi jika diisi harus valid range
     let allValid = true;
-    const nilaiArr = [];
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      const inputVal = $(`nilai-${i}`).value;
+    const kriteria = getActiveKriteria(currentPeserta.kategori);
+    // Bangun objek nilai per key (default '' untuk semua kriteria master)
+    const nilaiByKey = {};
+    CONFIG.KRITERIA_PENILAIAN.forEach(k => { nilaiByKey[k.key] = ''; });
+
+    kriteria.forEach(k => {
+      const inputVal = $(`nilai-${k.key}`).value;
       if (inputVal === '') {
-        // Kosong = tidak dinilai, simpan sebagai null/empty
-        nilaiArr.push('');
+        nilaiByKey[k.key] = '';
       } else {
-        if (!validateNilaiInput(i)) allValid = false;
+        if (!validateNilaiInput(k.key)) allValid = false;
         const val = parseFloat(inputVal);
         if (isNaN(val)) allValid = false;
-        nilaiArr.push(val);
+        nilaiByKey[k.key] = val;
       }
     });
 
@@ -735,17 +824,9 @@
       return;
     }
 
-    // Validasi waktu tampil
-    const waktu = $('input-waktu-tampil').value.trim();
-    if (!waktu) {
-      $('err-waktu-tampil').textContent = 'Waktu tampil wajib diisi.';
-      showToast('Waktu tampil wajib diisi', 'error');
-      return;
-    }
-    $('err-waktu-tampil').textContent = '';
-
     // Hitung total (skip yang kosong)
-    const totalNilai = nilaiArr.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
+    const totalNilai = Object.values(nilaiByKey)
+      .reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
 
     // Buat ID Penilaian: NLP-{NomorUrut}-{Juri}
     const juriKey = juri.replace(' ', '').toUpperCase(); // "Juri 1" → "JURI1"
@@ -763,14 +844,14 @@
       namaPeserta,
       juri,
       waktu,
-      orisinalitas: nilaiArr[0],
-      kemantapan: nilaiArr[1],
-      stamina: nilaiArr[2],
-      kekompakan: nilaiArr[3],
-      kreatifitas: nilaiArr[4],
-      kekayaanTeknik: nilaiArr[5],
-      teknikSerangBela: nilaiArr[6],
-      penghayatan: nilaiArr[7],
+      orisinalitas: nilaiByKey.orisinalitas,
+      kemantapan: nilaiByKey.kemantapan,
+      stamina: nilaiByKey.stamina,
+      kekompakan: nilaiByKey.kekompakan,
+      kreatifitas: nilaiByKey.kreatifitas,
+      kekayaanTeknik: nilaiByKey.kekayaanTeknik,
+      teknikSerangBela: nilaiByKey.teknikSerangBela,
+      penghayatan: nilaiByKey.penghayatan,
       totalNilai
     };
 
@@ -799,11 +880,21 @@
   }
 
   function resetNilaiInputs() {
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      $(`nilai-${i}`).value = '';
-      $(`kriteria-card-${i}`).classList.remove('invalid');
-      $(`nilai-${i}`).classList.remove('invalid');
-      $(`err-nilai-${i}`).textContent = '';
+    const kriteria = currentPeserta ? getActiveKriteria(currentPeserta.kategori) : [];
+    kriteria.forEach(k => {
+      const input = $(`nilai-${k.key}`);
+      if (!input) return;
+      input.value = '';
+      input.readOnly = false;
+      input.classList.remove('invalid', 'auto-filled');
+      const card = $(`kriteria-card-${k.key}`);
+      if (card) {
+        card.classList.remove('invalid');
+        const note = card.querySelector('.auto-note');
+        if (note) note.remove();
+      }
+      const errEl = $(`err-nilai-${k.key}`);
+      if (errEl) errEl.textContent = '';
     });
     selectJuri.value = '';
     $('err-juri').textContent = '';
@@ -953,31 +1044,36 @@
     $('btn-cancel-edit-nilai').addEventListener('click', closeEditNilaiModal);
     $('modal-edit-nilai').querySelector('.modal-overlay').addEventListener('click', closeEditNilaiModal);
     $('btn-update-nilai').addEventListener('click', updateNilai);
+    // Input kriteria dibangun dinamis saat modal dibuka (lihat openEditNilai)
+  }
 
-    // Setup input kriteria untuk modal edit
-    $('edit-kriteria-inputs').innerHTML = CONFIG.KRITERIA_PENILAIAN.map((k, i) => `
-      <div class="kriteria-card" id="edit-kriteria-card-${i}">
-        <div class="kriteria-name">${i + 1}. ${k.nama}</div>
-        <input type="number" id="edit-nilai-${i}" min="${k.min}" max="${k.max}" placeholder="${k.min}" aria-label="${k.nama}">
+  // Bangun input kriteria modal edit sesuai kategori
+  function buildEditKriteriaInputs(kategori) {
+    const kriteria = getActiveKriteria(kategori);
+    $('edit-kriteria-inputs').innerHTML = kriteria.map((k, idx) => `
+      <div class="kriteria-card" id="edit-kriteria-card-${k.key}">
+        <div class="kriteria-name">${idx + 1}. ${k.nama}</div>
+        <input type="number" id="edit-nilai-${k.key}" min="${k.min}" max="${k.max}" placeholder="${k.min}" aria-label="${k.nama}">
         <div class="kriteria-hint">(${k.min} – ${k.max})</div>
-        <div class="kriteria-error" id="err-edit-nilai-${i}"></div>
+        <div class="kriteria-error" id="err-edit-nilai-${k.key}"></div>
       </div>
     `).join('');
 
-    // Live total kalkulasi
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      $(`edit-nilai-${i}`).addEventListener('input', hitungTotalNilaiEdit);
+    kriteria.forEach(k => {
+      $(`edit-nilai-${k.key}`).addEventListener('input', () => hitungTotalNilaiEdit(kategori));
     });
   }
 
-  function hitungTotalNilaiEdit() {
+  function hitungTotalNilaiEdit(kategori) {
     let total = 0;
     let adaInput = false;
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      const input = $(`edit-nilai-${i}`);
+    const kriteria = getActiveKriteria(kategori);
+    kriteria.forEach(k => {
+      const input = $(`edit-nilai-${k.key}`);
+      if (!input) return;
       const val = parseFloat(input.value);
-      const card = $(`edit-kriteria-card-${i}`);
-      const errEl = $(`err-edit-nilai-${i}`);
+      const card = $(`edit-kriteria-card-${k.key}`);
+      const errEl = $(`err-edit-nilai-${k.key}`);
 
       if (input.value === '') {
         card.classList.remove('invalid');
@@ -1029,17 +1125,19 @@
       $('edit-nilai-nomor').textContent = nilaiData.nomorUrut;
       $('edit-nilai-juri').textContent = nilaiData.juri;
 
-      // Isi nilai-nilai ke input
-      const fieldMap = ['orisinalitas', 'kemantapan', 'stamina', 'kekompakan', 'kreatifitas', 'kekayaanTeknik', 'teknikSerangBela', 'penghayatan'];
-      fieldMap.forEach((f, i) => {
-        const val = nilaiData[f];
-        $(`edit-nilai-${i}`).value = (val !== null && val !== undefined && val !== 0 && val !== '') ? val : '';
-        $(`edit-kriteria-card-${i}`).classList.remove('invalid');
-        $(`edit-nilai-${i}`).classList.remove('invalid');
-        $(`err-edit-nilai-${i}`).textContent = '';
+      // Bangun input sesuai kategori peserta lalu isi nilainya
+      buildEditKriteriaInputs(nilaiData.kategori);
+      const kriteria = getActiveKriteria(nilaiData.kategori);
+      kriteria.forEach(k => {
+        const val = nilaiData[k.key];
+        const input = $(`edit-nilai-${k.key}`);
+        input.value = (val !== null && val !== undefined && val !== 0 && val !== '') ? val : '';
+        input.classList.remove('invalid');
+        $(`edit-kriteria-card-${k.key}`).classList.remove('invalid');
+        $(`err-edit-nilai-${k.key}`).textContent = '';
       });
 
-      hitungTotalNilaiEdit();
+      hitungTotalNilaiEdit(nilaiData.kategori);
       $('modal-edit-nilai').classList.remove('hidden');
     } catch (err) {
       showToast('Gagal menghubungi server', 'error');
@@ -1054,17 +1152,22 @@
   async function updateNilai() {
     if (!editingNilaiData) return;
 
+    const kategori = editingNilaiData.kategori;
+    const kriteria = getActiveKriteria(kategori);
+
     // Validasi nilai (opsional, tapi kalau diisi harus dalam range)
     let allValid = true;
-    const nilaiArr = [];
-    CONFIG.KRITERIA_PENILAIAN.forEach((k, i) => {
-      const inputVal = $(`edit-nilai-${i}`).value;
+    const nilaiByKey = {};
+    CONFIG.KRITERIA_PENILAIAN.forEach(k => { nilaiByKey[k.key] = ''; });
+
+    kriteria.forEach(k => {
+      const inputVal = $(`edit-nilai-${k.key}`).value;
       if (inputVal === '') {
-        nilaiArr.push('');
+        nilaiByKey[k.key] = '';
       } else {
         const val = parseFloat(inputVal);
         if (isNaN(val) || val < k.min || val > k.max) allValid = false;
-        nilaiArr.push(val);
+        nilaiByKey[k.key] = val;
       }
     });
 
@@ -1073,19 +1176,20 @@
       return;
     }
 
-    const totalNilai = nilaiArr.reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
+    const totalNilai = Object.values(nilaiByKey)
+      .reduce((acc, v) => acc + (typeof v === 'number' ? v : 0), 0);
 
     const payload = {
       action: 'editNilai',
       idPenilaian: editingNilaiData.idPenilaian,
-      orisinalitas: nilaiArr[0],
-      kemantapan: nilaiArr[1],
-      stamina: nilaiArr[2],
-      kekompakan: nilaiArr[3],
-      kreatifitas: nilaiArr[4],
-      kekayaanTeknik: nilaiArr[5],
-      teknikSerangBela: nilaiArr[6],
-      penghayatan: nilaiArr[7],
+      orisinalitas: nilaiByKey.orisinalitas,
+      kemantapan: nilaiByKey.kemantapan,
+      stamina: nilaiByKey.stamina,
+      kekompakan: nilaiByKey.kekompakan,
+      kreatifitas: nilaiByKey.kreatifitas,
+      kekayaanTeknik: nilaiByKey.kekayaanTeknik,
+      teknikSerangBela: nilaiByKey.teknikSerangBela,
+      penghayatan: nilaiByKey.penghayatan,
       totalNilai
     };
 
