@@ -500,30 +500,45 @@ function getRekapNilai() {
       }
     }
 
-    // Hitung Nilai Orisinalitas (rumus sama: sum - max - min jika juri >= 3)
-    var nilaiOris = [];
-    if (item.orisJuri1 !== null) nilaiOris.push(item.orisJuri1);
-    if (item.orisJuri2 !== null) nilaiOris.push(item.orisJuri2);
-    if (item.orisJuri3 !== null) nilaiOris.push(item.orisJuri3);
-    if (item.orisJuri4 !== null) nilaiOris.push(item.orisJuri4);
-    if (item.orisJuri5 !== null) nilaiOris.push(item.orisJuri5);
+    // Hitung Nilai Orisinalitas:
+    // Eliminasi juri dengan TOTAL nilai tertinggi & terendah,
+    // lalu jumlahkan nilai ORISINALITAS dari juri yang tersisa.
+    var pasangan = []; // { total, oris }
+    for (var pj = 1; pj <= 5; pj++) {
+      var totalJ = item['juri' + pj];
+      if (totalJ !== null) {
+        pasangan.push({
+          total: totalJ,
+          oris: (item['orisJuri' + pj] !== null) ? item['orisJuri' + pj] : 0
+        });
+      }
+    }
 
-    if (nilaiOris.length === 0) {
+    if (pasangan.length === 0) {
       item.nilaiOrisinalitas = 0;
+    } else if (pasangan.length < 3) {
+      // Belum cukup data untuk eliminasi → jumlahkan semua orisinalitas
+      var sObris = 0;
+      for (var pa = 0; pa < pasangan.length; pa++) sObris += pasangan[pa].oris;
+      item.nilaiOrisinalitas = sObris;
     } else {
-      var sumOris = 0;
-      var maxOris = nilaiOris[0];
-      var minOris = nilaiOris[0];
-      for (var ko = 0; ko < nilaiOris.length; ko++) {
-        sumOris += nilaiOris[ko];
-        if (nilaiOris[ko] > maxOris) maxOris = nilaiOris[ko];
-        if (nilaiOris[ko] < minOris) minOris = nilaiOris[ko];
+      // Cari index juri dengan total tertinggi & terendah (1 masing-masing)
+      var idxMax = 0, idxMin = 0;
+      for (var pb = 1; pb < pasangan.length; pb++) {
+        if (pasangan[pb].total > pasangan[idxMax].total) idxMax = pb;
+        if (pasangan[pb].total < pasangan[idxMin].total) idxMin = pb;
       }
-      if (nilaiOris.length >= 3) {
-        item.nilaiOrisinalitas = sumOris - maxOris - minOris;
-      } else {
-        item.nilaiOrisinalitas = sumOris;
+      // Jika idxMax === idxMin (semua total sama), tetap eliminasi 2 juri berbeda
+      if (idxMax === idxMin) {
+        idxMin = (idxMax === 0) ? 1 : 0;
       }
+      // Jumlahkan orisinalitas juri yang tersisa (selain idxMax & idxMin)
+      var sumOrisSisa = 0;
+      for (var pc = 0; pc < pasangan.length; pc++) {
+        if (pc === idxMax || pc === idxMin) continue;
+        sumOrisSisa += pasangan[pc].oris;
+      }
+      item.nilaiOrisinalitas = sumOrisSisa;
     }
 
     result.push(item);
