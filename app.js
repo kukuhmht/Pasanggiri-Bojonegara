@@ -431,11 +431,62 @@
       switchToPage('page-form');
     });
     btnKunci.addEventListener('click', lockPenilaian);
+
+    // Setup Ubah PIN
+    $('btn-ubah-pin').addEventListener('click', () => {
+      $('modal-ubah-pin').classList.remove('hidden');
+      $('input-pin-lama').value = '';
+      $('input-pin-baru').value = '';
+      $('input-pin-konfirmasi').value = '';
+      $('err-pin-lama').textContent = '';
+      $('err-pin-baru').textContent = '';
+      $('err-pin-konfirmasi').textContent = '';
+    });
+    $('btn-batal-ubah-pin').addEventListener('click', () => {
+      $('modal-ubah-pin').classList.add('hidden');
+    });
+    $('modal-ubah-pin-overlay').addEventListener('click', () => {
+      $('modal-ubah-pin').classList.add('hidden');
+    });
+    $('btn-simpan-pin').addEventListener('click', simpanPinBaru);
+  }
+
+  function simpanPinBaru() {
+    const currentPin = sessionStorage.getItem('pinJuri') || PIN_JURI_DEFAULT;
+    const pinLama = $('input-pin-lama').value.trim();
+    const pinBaru = $('input-pin-baru').value.trim();
+    const pinKonfirmasi = $('input-pin-konfirmasi').value.trim();
+
+    // Reset error
+    $('err-pin-lama').textContent = '';
+    $('err-pin-baru').textContent = '';
+    $('err-pin-konfirmasi').textContent = '';
+
+    // Validasi
+    if (pinLama !== currentPin) {
+      $('err-pin-lama').textContent = 'PIN lama tidak valid.';
+      return;
+    }
+    if (!pinBaru || pinBaru.length < 4) {
+      $('err-pin-baru').textContent = 'PIN baru minimal 4 digit.';
+      return;
+    }
+    if (pinBaru !== pinKonfirmasi) {
+      $('err-pin-konfirmasi').textContent = 'Konfirmasi PIN tidak cocok.';
+      return;
+    }
+
+    // Simpan PIN baru ke sessionStorage
+    sessionStorage.setItem('pinJuri', pinBaru);
+    $('modal-ubah-pin').classList.add('hidden');
+    showToast('PIN berhasil diubah!', 'success');
   }
 
   function validatePin() {
     const pin = inputPin.value.trim();
-    if (pin === PIN_JURI) {
+    // Ambil PIN aktif: dari sessionStorage (jika sudah diubah) atau default
+    const currentPin = sessionStorage.getItem('pinJuri') || PIN_JURI_DEFAULT;
+    if (pin === currentPin) {
       // PIN benar — simpan sesi dan masuk ke halaman Penilaian
       sessionStorage.setItem('juriAuthenticated', 'true');
       modalPin.classList.add('hidden');
@@ -617,10 +668,20 @@
   }
 
   // Helper: ambil daftar kriteria aktif untuk kategori tertentu
+  // Override range ORISINALITAS berdasarkan kategori
   function getActiveKriteria(kategori) {
     const keys = CONFIG.KRITERIA_PER_KATEGORI[kategori];
     if (!keys) return CONFIG.KRITERIA_PENILAIAN.slice(); // fallback: semua
-    return keys.map(getKriteriaByKey).filter(Boolean);
+    return keys.map(key => {
+      const k = getKriteriaByKey(key);
+      if (!k) return null;
+      // Override range orisinalitas per kategori
+      if (key === 'orisinalitas') {
+        const range = CONFIG.ORISINALITAS_RANGE[kategori] || CONFIG.ORISINALITAS_RANGE['DEFAULT'];
+        return { ...k, min: range.min, max: range.max };
+      }
+      return k;
+    }).filter(Boolean);
   }
 
   // Bangun input nilai sesuai kategori peserta
@@ -1019,7 +1080,6 @@
           <div>${nilai}</div>
           <div class="juri-actions">
             <button class="btn-mini btn-mini-edit" onclick="App.editNilai('${d.nomorUrut}','Juri ${juriNum}')" title="Edit">✏️</button>
-            <button class="btn-mini btn-mini-delete" onclick="App.hapusNilai('${d.nomorUrut}','Juri ${juriNum}')" title="Hapus">🗑️</button>
           </div>
         </td>`;
       };

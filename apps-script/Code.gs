@@ -500,46 +500,37 @@ function getRekapNilai() {
       }
     }
 
-    // Hitung Nilai Orisinalitas:
-    // Eliminasi juri dengan TOTAL nilai tertinggi & terendah,
-    // lalu jumlahkan nilai ORISINALITAS dari juri yang tersisa.
-    var pasangan = []; // { total, oris }
-    for (var pj = 1; pj <= 5; pj++) {
-      var totalJ = item['juri' + pj];
-      if (totalJ !== null) {
-        pasangan.push({
-          total: totalJ,
-          oris: (item['orisJuri' + pj] !== null) ? item['orisJuri' + pj] : 0
-        });
-      }
-    }
+// 1. Kumpulkan data juri yang valid
+const pasangan = [];
+for (let i = 1; i <= 5; i++) {
+  const total = item[`juri${i}`];
+  if (total !== null && total !== undefined) {
+    pasangan.push({
+      total: total,
+      // Gunakan nullish coalescing (??) untuk fallback ke 0 jika null/undefined
+      oris: item[`orisJuri${i}`] ?? 0 
+    });
+  }
+}
 
-    if (pasangan.length === 0) {
-      item.nilaiOrisinalitas = 0;
-    } else if (pasangan.length < 3) {
-      // Belum cukup data untuk eliminasi → jumlahkan semua orisinalitas
-      var sObris = 0;
-      for (var pa = 0; pa < pasangan.length; pa++) sObris += pasangan[pa].oris;
-      item.nilaiOrisinalitas = sObris;
-    } else {
-      // Cari index juri dengan total tertinggi & terendah (1 masing-masing)
-      var idxMax = 0, idxMin = 0;
-      for (var pb = 1; pb < pasangan.length; pb++) {
-        if (pasangan[pb].total > pasangan[idxMax].total) idxMax = pb;
-        if (pasangan[pb].total < pasangan[idxMin].total) idxMin = pb;
-      }
-      // Jika idxMax === idxMin (semua total sama), tetap eliminasi 2 juri berbeda
-      if (idxMax === idxMin) {
-        idxMin = (idxMax === 0) ? 1 : 0;
-      }
-      // Jumlahkan orisinalitas juri yang tersisa (selain idxMax & idxMin)
-      var sumOrisSisa = 0;
-      for (var pc = 0; pc < pasangan.length; pc++) {
-        if (pc === idxMax || pc === idxMin) continue;
-        sumOrisSisa += pasangan[pc].oris;
-      }
-      item.nilaiOrisinalitas = sumOrisSisa;
-    }
+// 2. Hitung Nilai Orisinalitas berdasarkan jumlah juri
+if (pasangan.length === 0) {
+  item.nilaiOrisinalitas = 0;
+  
+} else if (pasangan.length < 3) {
+  // Belum cukup data untuk eliminasi → jumlahkan semua orisinalitas
+  item.nilaiOrisinalitas = pasangan.reduce((sum, p) => sum + p.oris, 0);
+  
+} else {
+  // Urutkan juri berdasarkan 'total' dari yang terkecil ke terbesar
+  pasangan.sort((a, b) => a.total - b.total);
+  
+  // slice(1, -1) membuang index pertama (terendah) dan index terakhir (tertinggi)
+  const juriTersisa = pasangan.slice(1, -1);
+  
+  // Jumlahkan nilai orisinalitas dari juri yang tersisa
+  item.nilaiOrisinalitas = juriTersisa.reduce((sum, p) => sum + p.oris, 0);
+}
 
     result.push(item);
   }

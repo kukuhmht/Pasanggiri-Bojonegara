@@ -1,7 +1,7 @@
 // Konfigurasi Web App Pasanggiri Bojonegara
 
-// PIN akses fitur Penilaian Juri
-const PIN_JURI = "354313";
+// PIN akses fitur Penilaian Juri (default, bisa diubah via fitur Update PIN)
+const PIN_JURI_DEFAULT = "335544";
 
 const CONFIG = {
   // Ganti URL ini setelah deploy Apps Script
@@ -62,6 +62,13 @@ const CONFIG = {
   // Batas waktu tampil; jika melebihi, KEMANTAPAN otomatis jadi nilai default
   WAKTU_TAMPIL_BATAS_DETIK: 190, // 3 menit 10 detik = 190 detik
   KEMANTAPAN_DEFAULT_LEBIH_WAKTU: 20,
+
+  // Override range ORISINALITAS per kategori
+  // MASSAL: 14-25, lainnya (PERORANGAN, BERKELOMPOK, ATT): 39-50
+  ORISINALITAS_RANGE: {
+    'MASSAL': { min: 14, max: 25 },
+    'DEFAULT': { min: 39, max: 50 }
+  },
 
   // Daftar Juri
   JURI_LIST: ['Juri 1', 'Juri 2', 'Juri 3', 'Juri 4', 'Juri 5']

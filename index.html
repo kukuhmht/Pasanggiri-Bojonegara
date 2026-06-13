@@ -136,7 +136,10 @@
       <div class="container">
         <div class="penilaian-header">
           <h2>Penilaian Peserta</h2>
-          <button type="button" class="btn-kunci" id="btn-kunci" title="Kunci akses penilaian">🔒 Kunci</button>
+          <div class="penilaian-header-actions">
+            <button type="button" class="btn-kunci" id="btn-ubah-pin" title="Ubah PIN akses">🔑 Ubah PIN</button>
+            <button type="button" class="btn-kunci" id="btn-kunci" title="Kunci akses penilaian">🔒 Kunci</button>
+          </div>
         </div>
 
         <!-- Sub-nav: Form & Rekap -->
@@ -316,6 +319,32 @@
           <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Batal</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Ubah PIN -->
+  <div id="modal-ubah-pin" class="modal hidden">
+    <div class="modal-overlay" id="modal-ubah-pin-overlay"></div>
+    <div class="modal-content modal-pin-content">
+      <div class="pin-icon">🔑</div>
+      <h3>Ubah PIN Akses</h3>
+      <div class="form-group">
+        <label for="input-pin-lama">PIN Lama</label>
+        <input type="password" id="input-pin-lama" maxlength="6" placeholder="PIN saat ini" inputmode="numeric">
+        <span class="error-msg" id="err-pin-lama"></span>
+      </div>
+      <div class="form-group">
+        <label for="input-pin-baru">PIN Baru</label>
+        <input type="password" id="input-pin-baru" maxlength="6" placeholder="PIN baru" inputmode="numeric">
+        <span class="error-msg" id="err-pin-baru"></span>
+      </div>
+      <div class="form-group">
+        <label for="input-pin-konfirmasi">Konfirmasi PIN Baru</label>
+        <input type="password" id="input-pin-konfirmasi" maxlength="6" placeholder="Ketik ulang PIN baru" inputmode="numeric">
+        <span class="error-msg" id="err-pin-konfirmasi"></span>
+      </div>
+      <button type="button" class="btn btn-pin-masuk" id="btn-simpan-pin">Simpan PIN Baru</button>
+      <button type="button" class="btn btn-secondary" id="btn-batal-ubah-pin" style="margin-top:8px;">Batal</button>
     </div>
   </div>
 
